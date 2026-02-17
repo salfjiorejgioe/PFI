@@ -1,9 +1,7 @@
-CREATE DATABASE DarQuest;
-Use DarQuest;
-
+use dbdarquest2;
 
 CREATE TABLE Joueurs (
-    alias Unique NOT NULL,
+    alias VARCHAR(30) PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     prenom VARCHAR(255) NOT NULL,
     MontantOr INT DEFAULT 5,
@@ -11,15 +9,14 @@ CREATE TABLE Joueurs (
     MontantBronze INT DEFAULT 20,
     EstMage BOOLEAN,
     idUser INT,
-    QuetesCompletes INT
-    role int not null default 0;
-    
-)
+    NbQuetesCompletes INT,
+    roles INT NOT NULL DEFAULT 0
+);
 
 CREATE TABLE Items (
     id INT PRIMARY KEY,
     nomItem VARCHAR(255) NOT NULL,
-    descriptoinItem TEXT,
+    descriptionItem TEXT,
     typeITEM VARCHAR(50),
     MontantEnStock INT,
     prixOr INT,
@@ -27,7 +24,6 @@ CREATE TABLE Items (
     prixBronze INT,
     NbEtoiles INT,
     EvaluationJoueurs VARCHAR(255)
-
 );
 
 CREATE TABLE Quetes (
@@ -40,25 +36,27 @@ CREATE TABLE Quetes (
     recompenseBronze INT,
     EstMagique BOOLEAN
 );
+
 CREATE TABLE Inventaire (
     idInventaire INT PRIMARY KEY,
-    idJoueur INT,
-    idItem INT,
-    FOREIGN KEY (idJoueur) REFERENCES Joueurs(alias),
+    aliasJoueur VARCHAR(30) NOT NULL,
+    idItem INT NOT NULL,
+    FOREIGN KEY (aliasJoueur) REFERENCES Joueurs(alias),
     FOREIGN KEY (idItem) REFERENCES Items(id)
 );
 
 CREATE TABLE Joueurs_Items (
-    idJoueur INT,
-    idItem INT,
-    PRIMARY KEY (idJoueur, idItem),
-    FOREIGN KEY (idJoueur) REFERENCES Joueurs(alias),
+    aliasJoueur VARCHAR(30) NOT NULL,
+    idItem INT NOT NULL,
+    PRIMARY KEY (aliasJoueur, idItem),
+    FOREIGN KEY (aliasJoueur) REFERENCES Joueurs(alias),
     FOREIGN KEY (idItem) REFERENCES Items(id)
 );
+
 CREATE TABLE Joueurs_Quetes (
-    idJoueur INT,
-    idQuete INT,
-    PRIMARY KEY (idJoueur, idQuete),
-    FOREIGN KEY (idJoueur) REFERENCES Joueurs(alias),
+    aliasJoueur VARCHAR(30) NOT NULL,
+    idQuete INT NOT NULL,
+    PRIMARY KEY (aliasJoueur, idQuete),
+    FOREIGN KEY (aliasJoueur) REFERENCES Joueurs(alias),
     FOREIGN KEY (idQuete) REFERENCES Quetes(id)
 );
