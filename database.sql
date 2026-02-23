@@ -60,3 +60,6 @@ CREATE TABLE Joueurs_Quetes (
     FOREIGN KEY (aliasJoueur) REFERENCES Joueurs(alias),
     FOREIGN KEY (idQuete) REFERENCES Quetes(id)
 );
+
+
+
