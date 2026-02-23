@@ -97,6 +97,24 @@ function formatPrice(int $bronze): string {
   if ($bronzeLeft > 0 || count($parts) === 0) $parts[] = "{$bronzeLeft}b";
   return implode(' ', $parts);
 }
+function itemTypeLabel(array $item): string {
+  // Ton data utilise category: "Arme", "Armure", "Potion", "Pouvoir"
+  return match ($item['category'] ?? '') {
+    'Pouvoir' => 'Sort',
+    default => (string)($item['category'] ?? 'Type'),
+  };
+}
+
+function itemTypeClass(array $item): string {
+  // Classes CSS stables (sans accents)
+  return match ($item['category'] ?? '') {
+    'Arme'   => 'type-weapon',
+    'Armure' => 'type-armor',
+    'Potion' => 'type-potion',
+    'Pouvoir'=> 'type-spell',
+    default  => 'type-other',
+  };
+}
 
 function cartTotals(array $items): array {
   $totalItems = 0;
@@ -175,8 +193,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /**
  * GET: recherche + filtre
  */
-$currentFilter = $_GET['tier'] ?? 'all';
-$currentFilter = in_array($currentFilter, ['all','gold','silver','bronze'], true) ? $currentFilter : 'all';
+$currentFilter = $_GET['type'] ?? 'all';
+$currentFilter = in_array($currentFilter, ['all','arme','armure','potion','sort'], true) ? $currentFilter : 'all';
 
 $currentSearch = trim((string)($_GET['q'] ?? ''));
 $searchLower = mb_strtolower($currentSearch);
@@ -185,14 +203,24 @@ $searchLower = mb_strtolower($currentSearch);
  * Filtrage items
  */
 $filteredItems = array_filter($items, function($item) use ($currentFilter, $searchLower) {
-  $matchesTier = ($currentFilter === 'all' || $item['tier'] === $currentFilter);
 
-  if ($searchLower === '') return $matchesTier;
+  // Map category -> filter key
+  $typeKey = match ($item['category'] ?? '') {
+    'Arme'   => 'arme',
+    'Armure' => 'armure',
+    'Potion' => 'potion',
+    'Pouvoir'=> 'sort',
+    default  => 'other',
+  };
+
+  $matchesType = ($currentFilter === 'all' || $typeKey === $currentFilter);
+
+  if ($searchLower === '') return $matchesType;
 
   $hay = mb_strtolower($item['name'].' '.$item['description'].' '.$item['category']);
   $matchesSearch = (mb_strpos($hay, $searchLower) !== false);
 
-  return $matchesTier && $matchesSearch;
+  return $matchesType && $matchesSearch;
 });
 
 $flash = $_SESSION['flash'] ?? null;
@@ -203,7 +231,7 @@ unset($_SESSION['flash']);
 // construit une URL "courante" pour redirect après POST (pour garder q/tier)
 $query = http_build_query([
   'q' => $currentSearch !== '' ? $currentSearch : null,
-  'tier' => $currentFilter !== 'all' ? $currentFilter : null,
+  'type' => $currentFilter !== 'all' ? $currentFilter : null,
 ]);
 $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
 ?>
@@ -221,7 +249,7 @@ $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
     <header class="header">
       <div class="header-left">
         <h1>Marché Mystique</h1>
-        <p class="subtitle">Découvrez des objets rares et magiques venus de tout le royaume</p>
+        <p class="subtitle">Notre bibliothèque des objets magiques et puissants</p>
       </div>
 
       <div class="header-right">
@@ -268,29 +296,38 @@ $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
       <form class="search-box" method="get" action="marketplace.php">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" name="q" value="<?= h($currentSearch) ?>" placeholder="Rechercher des objets magiques...">
-        <?php if ($currentFilter !== 'all'): ?>
-          <input type="hidden" name="tier" value="<?= h($currentFilter) ?>">
-        <?php endif; ?>
+       <?php if ($currentFilter !== 'all'): ?>
+  <input type="hidden" name="type" value="<?= h($currentFilter) ?>">
+<?php endif; ?>
         <button class="clear-btn" type="submit" name="q" value="" aria-label="Effacer">×</button>
       </form>
 
-      <div class="filter-buttons">
-        <a class="filter-btn <?= $currentFilter==='all'?'active':'' ?> all"
-           href="marketplace.php<?= $currentSearch!=='' ? ('?'.http_build_query(['q'=>$currentSearch])) : '' ?>"
-           data-tier="all">Tous</a>
+  <div class="filter-buttons">
+  <a class="filter-btn <?= $currentFilter==='all'?'active':'' ?> all"
+     href="marketplace.php<?= $currentSearch!=='' ? ('?'.http_build_query(['q'=>$currentSearch])) : '' ?>">
+     Tous
+  </a>
 
-        <a class="filter-btn <?= $currentFilter==='gold'?'active':'' ?> gold"
-           href="marketplace.php?<?= h(http_build_query(['tier'=>'gold','q'=>$currentSearch!==''?$currentSearch:null])) ?>"
-           data-tier="gold">Or</a>
+  <a class="filter-btn <?= $currentFilter==='arme'?'active':'' ?> arme"
+     href="marketplace.php?<?= h(http_build_query(['type'=>'arme','q'=>$currentSearch!==''?$currentSearch:null])) ?>">
+     Armes
+  </a>
 
-        <a class="filter-btn <?= $currentFilter==='silver'?'active':'' ?> silver"
-           href="marketplace.php?<?= h(http_build_query(['tier'=>'silver','q'=>$currentSearch!==''?$currentSearch:null])) ?>"
-           data-tier="silver">Argent</a>
+  <a class="filter-btn <?= $currentFilter==='armure'?'active':'' ?> armure"
+     href="marketplace.php?<?= h(http_build_query(['type'=>'armure','q'=>$currentSearch!==''?$currentSearch:null])) ?>">
+     Armures
+  </a>
 
-        <a class="filter-btn <?= $currentFilter==='bronze'?'active':'' ?> bronze"
-           href="marketplace.php?<?= h(http_build_query(['tier'=>'bronze','q'=>$currentSearch!==''?$currentSearch:null])) ?>"
-           data-tier="bronze">Bronze</a>
-      </div>
+  <a class="filter-btn <?= $currentFilter==='potion'?'active':'' ?> potion"
+     href="marketplace.php?<?= h(http_build_query(['type'=>'potion','q'=>$currentSearch!==''?$currentSearch:null])) ?>">
+     Potions
+  </a>
+
+  <a class="filter-btn <?= $currentFilter==='sort'?'active':'' ?> sort"
+     href="marketplace.php?<?= h(http_build_query(['type'=>'sort','q'=>$currentSearch!==''?$currentSearch:null])) ?>">
+     Sorts
+  </a>
+</div>
     </div>
 
     <div class="items-count" id="itemsCount">
@@ -308,7 +345,7 @@ $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
           $stock = (int)($_SESSION['stock'][$item['id']] ?? 0);
           $out = ($stock <= 0);
         ?>
-          <div class="item-card <?= h($item['tier']) ?>">
+          <div class="item-card <?= h(itemTypeClass($item)) ?>">
             <div class="item-image <?= h($item['tier']) ?>">
               <img src="<?= h($item['imagePath']) ?>" alt="<?= h($item['name']) ?>">
             </div>
@@ -316,7 +353,7 @@ $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
             <div class="item-content">
               <div class="item-header">
                 <h3 class="item-name"><?= h($item['name']) ?></h3>
-                <span class="item-tier <?= h($item['tier']) ?>"><?= h($item['tier']) ?></span>
+                <span class="item-tier <?= h(itemTypeClass($item)) ?>"><?= h(itemTypeLabel($item)) ?></span>
               </div>
 
               <p class="item-description"><?= h($item['description']) ?></p>
@@ -389,7 +426,7 @@ $redirectUrl = 'marketplace.php' . ($query ? ('?'.$query) : '');
               <div class="cart-item-info">
                 <h4><?= h($it['name']) ?></h4>
                 <div class="cart-item-tags">
-                  <span class="cart-item-tag <?= h($it['tier']) ?>"><?= h($it['tier']) ?></span>
+                  <span class="cart-item-tag <?= h(itemTypeClass($it)) ?>"><?= h(itemTypeLabel($it)) ?></span>
                   <span class="cart-item-category"><?= h($it['category']) ?></span>
                 </div>
               </div>
