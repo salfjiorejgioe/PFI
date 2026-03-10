@@ -4,6 +4,7 @@
   .top-actions{
     position: static;
     justify-content: center;
+<<<<<<< HEAD
     margin: 10px 0;
   }
 }
@@ -360,3 +361,85 @@ table{
   display: grid;
   gap: 10px;
 }
+=======
+    margin-top: 20px;
+} 
+
+.barreRecherche input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.Titre {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 24px;
+    color: #333;
+}
+.SousTitre {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 18px;
+    color: #666;
+
+}
+.boutonPanier {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+
+
+}
+.boutonPanierHover:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.caseItems {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.caseConversionMonnaie {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+
+
+}
+
+.descriptionItem {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  .prixItem {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 16px;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .Efficacite { 
+    text-align: center;
+    margin-top: 5px;
+    font-size: 14px;
+    color: #000;
+    font-weight: bold;
+  }
+  .imageItem{ 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100px;
+    height: 100px;
+  }
+>>>>>>> parent of eb7cd04 (Header Update avec image)
