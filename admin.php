@@ -1,32 +1,34 @@
 <?php
 session_start();
+require_once 'db.php';
 
 /*
-  Hypothèses:
-  - tu stockes l'utilisateur connecté dans $_SESSION['user']
-  - et $_SESSION['user']['estAdmin'] vaut 1 pour un admin
-  - ta BD s'appelle dbdarquest2
-  - ta table Items contient :
-      idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
+  Hypothèse:
+  Après connexion, tu stockes l'utilisateur dans $_SESSION['user']
+  Exemple:
+  $_SESSION['user'] = [
+      'idJoueur' => ...,
+      'alias' => ...,
+      'estAdmin' => ...
+  ];
 */
 
-if (!isset($_SESSION['user']) || !isset($_SESSION['user']['estAdmin']) || (int)$_SESSION['user']['estAdmin'] !== 1) {
-    header("Location: index.php");
+if (!isset($_SESSION['user']) || (int)($_SESSION['user']['estAdmin'] ?? 0) !== 1) {
+    header('Location: index.php');
     exit;
 }
 
-$conn = new mysqli("localhost", "root", "", "dbdarquest2");
-if ($conn->connect_error) {
-    die("Erreur connexion BD : " . $conn->connect_error);
-}
+$message = '';
+$error = '';
 
-$message = "";
-$error = "";
+function h($value) {
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
 
 /* =========================
    AJOUT ITEM
 ========================= */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_item') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_item') {
     $nom = trim($_POST['nom'] ?? '');
     $quantiteStock = (int)($_POST['quantiteStock'] ?? 0);
     $prix = (int)($_POST['prix'] ?? 0);
@@ -34,56 +36,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $typeItem = trim($_POST['typeItem'] ?? '');
     $estDisponible = isset($_POST['estDisponible']) ? 1 : 0;
 
-    if ($nom === '' || !in_array($typeItem, ['A', 'R', 'P', 'S'], true)) {
-        $error = "Veuillez remplir correctement les champs.";
+    if ($nom === '') {
+        $error = "Le nom est obligatoire.";
+    } elseif (!in_array($typeItem, ['A', 'R', 'P', 'S'], true)) {
+        $error = "Le type d'item est invalide.";
+    } elseif ($quantiteStock < 0 || $prix < 0) {
+        $error = "Le stock et le prix doivent être positifs.";
     } else {
-        $stmt = $conn->prepare("
-            INSERT INTO Items (nom, quantiteStock, prix, photo, typeItem, estDisponible)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->bind_param("siissi", $nom, $quantiteStock, $prix, $photo, $typeItem, $estDisponible);
+        try {
+            $sql = "INSERT INTO Items (nom, quantiteStock, prix, photo, typeItem, estDisponible)
+                    VALUES (:nom, :quantiteStock, :prix, :photo, :typeItem, :estDisponible)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                ':nom' => $nom,
+                ':quantiteStock' => $quantiteStock,
+                ':prix' => $prix,
+                ':photo' => $photo !== '' ? $photo : null,
+                ':typeItem' => $typeItem,
+                ':estDisponible' => $estDisponible
+            ]);
 
-        if ($stmt->execute()) {
             $message = "Item ajouté avec succès.";
-        } else {
-            $error = "Erreur lors de l'ajout : " . $stmt->error;
+        } catch (PDOException $e) {
+            $error = "Erreur lors de l'ajout : " . $e->getMessage();
         }
-
-        $stmt->close();
     }
 }
 
 /* =========================
-   SUPPRESSION ITEM
+   SUPPRESSION LOGIQUE
 ========================= */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'disable_item') {
     $idItem = (int)($_POST['idItem'] ?? 0);
 
     if ($idItem > 0) {
-        // Option 1 : suppression réelle
-        // Si ton item est référencé ailleurs, ça peut échouer à cause des FK
-        $stmt = $conn->prepare("DELETE FROM Items WHERE idItem = ?");
-        $stmt->bind_param("i", $idItem);
-
-        if ($stmt->execute()) {
-            $message = "Item supprimé avec succès.";
-        } else {
-            $error = "Impossible de supprimer cet item. Il est peut-être utilisé ailleurs. " . $stmt->error;
+        try {
+            $stmt = $pdo->prepare("UPDATE Items SET estDisponible = 0 WHERE idItem = :idItem");
+            $stmt->execute([':idItem' => $idItem]);
+            $message = "Item retiré de la vente avec succès.";
+        } catch (PDOException $e) {
+            $error = "Erreur lors de la désactivation : " . $e->getMessage();
         }
+    }
+}
 
-        $stmt->close();
+/* =========================
+   RÉACTIVER ITEM
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enable_item') {
+    $idItem = (int)($_POST['idItem'] ?? 0);
+
+    if ($idItem > 0) {
+        try {
+            $stmt = $pdo->prepare("UPDATE Items SET estDisponible = 1 WHERE idItem = :idItem");
+            $stmt->execute([':idItem' => $idItem]);
+            $message = "Item remis en vente avec succès.";
+        } catch (PDOException $e) {
+            $error = "Erreur lors de la réactivation : " . $e->getMessage();
+        }
     }
 }
 
 /* =========================
    LISTE ITEMS
 ========================= */
-$result = $conn->query("SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible FROM Items ORDER BY idItem DESC");
-$items = [];
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $items[] = $row;
-    }
+try {
+    $stmt = $pdo->query("SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
+                         FROM Items
+                         ORDER BY idItem DESC");
+    $items = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $items = [];
+    $error = "Erreur lors du chargement des items : " . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -142,7 +166,7 @@ if ($result) {
         }
 
         .admin-form button,
-        .delete-btn {
+        .action-btn {
             padding: 0.75rem 1rem;
             border: none;
             border-radius: 8px;
@@ -154,8 +178,13 @@ if ($result) {
             color: white;
         }
 
-        .delete-btn {
+        .disable-btn {
             background: #dc2626;
+            color: white;
+        }
+
+        .enable-btn {
+            background: #16a34a;
             color: white;
         }
 
@@ -168,6 +197,7 @@ if ($result) {
             padding: 0.75rem;
             border-bottom: 1px solid #e5e7eb;
             text-align: left;
+            vertical-align: middle;
         }
 
         .badge {
@@ -175,6 +205,7 @@ if ($result) {
             border-radius: 999px;
             font-size: 0.8rem;
             color: white;
+            display: inline-block;
         }
 
         .badge.A { background: #2563eb; }
@@ -189,6 +220,16 @@ if ($result) {
             border-radius: 8px;
             background: #f3f4f6;
         }
+
+        .status-on {
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .status-off {
+            color: #991b1b;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -198,12 +239,12 @@ if ($result) {
             <p>Gestion des items du Marché Mystique</p>
         </div>
 
-        <?php if ($message): ?>
-            <div class="msg-success"><?= htmlspecialchars($message) ?></div>
+        <?php if ($message !== ''): ?>
+            <div class="msg-success"><?= h($message) ?></div>
         <?php endif; ?>
 
-        <?php if ($error): ?>
-            <div class="msg-error"><?= htmlspecialchars($error) ?></div>
+        <?php if ($error !== ''): ?>
+            <div class="msg-error"><?= h($error) ?></div>
         <?php endif; ?>
 
         <div class="admin-card">
@@ -216,9 +257,9 @@ if ($result) {
 
                 <input type="number" name="quantiteStock" placeholder="Quantité en stock" min="0" required>
 
-                <input type="number" name="prix" placeholder="Prix (en bronze ou unité choisie)" min="0" required>
+                <input type="number" name="prix" placeholder="Prix" min="0" required>
 
-                <input type="text" name="photo" placeholder="Chemin de l'image ex: public/images/nom.png">
+                <input type="text" name="photo" placeholder="Chemin image ex: public/images/mon-item.png">
 
                 <select name="typeItem" required>
                     <option value="">Choisir un type</option>
@@ -262,26 +303,40 @@ if ($result) {
                                 <td><?= (int)$item['idItem'] ?></td>
                                 <td>
                                     <?php if (!empty($item['photo'])): ?>
-                                        <img class="item-thumb" src="<?= htmlspecialchars($item['photo']) ?>" alt="<?= htmlspecialchars($item['nom']) ?>">
+                                        <img class="item-thumb" src="<?= h($item['photo']) ?>" alt="<?= h($item['nom']) ?>">
                                     <?php else: ?>
                                         —
                                     <?php endif; ?>
                                 </td>
-                                <td><?= htmlspecialchars($item['nom']) ?></td>
+                                <td><?= h($item['nom']) ?></td>
                                 <td>
-                                    <span class="badge <?= htmlspecialchars($item['typeItem']) ?>">
-                                        <?= htmlspecialchars($item['typeItem']) ?>
+                                    <span class="badge <?= h($item['typeItem']) ?>">
+                                        <?= h($item['typeItem']) ?>
                                     </span>
                                 </td>
                                 <td><?= (int)$item['quantiteStock'] ?></td>
                                 <td><?= (int)$item['prix'] ?></td>
-                                <td><?= (int)$item['estDisponible'] === 1 ? 'Oui' : 'Non' ?></td>
+                                <td class="<?= (int)$item['estDisponible'] === 1 ? 'status-on' : 'status-off' ?>">
+                                    <?= (int)$item['estDisponible'] === 1 ? 'Oui' : 'Non' ?>
+                                </td>
                                 <td>
-                                    <form method="post" onsubmit="return confirm('Supprimer cet item ?');">
-                                        <input type="hidden" name="action" value="delete_item">
-                                        <input type="hidden" name="idItem" value="<?= (int)$item['idItem'] ?>">
-                                        <button type="submit" class="delete-btn">Supprimer</button>
-                                    </form>
+                                    <?php if ((int)$item['estDisponible'] === 1): ?>
+                                        <form method="post">
+                                            <input type="hidden" name="action" value="disable_item">
+                                            <input type="hidden" name="idItem" value="<?= (int)$item['idItem'] ?>">
+                                            <button type="submit" class="action-btn disable-btn">
+                                                Retirer de la vente
+                                            </button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="post">
+                                            <input type="hidden" name="action" value="enable_item">
+                                            <input type="hidden" name="idItem" value="<?= (int)$item['idItem'] ?>">
+                                            <button type="submit" class="action-btn enable-btn">
+                                                Remettre en vente
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -292,6 +347,3 @@ if ($result) {
     </div>
 </body>
 </html>
-<?php
-$conn->close();
-?>
