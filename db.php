@@ -14,3 +14,5 @@ try {
 } catch (PDOException $e) {
     die('Erreur connexion BD : ' . $e->getMessage());
 }
+
+?>
