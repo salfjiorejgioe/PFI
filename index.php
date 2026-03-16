@@ -71,6 +71,9 @@ session_start();
   <section>
     <h3>Potions</h3>
     <table id="potions">
+<<<<<<< HEAD
+        <!-- include tableau items (potions) -->
+=======
       <tr>
         <td><img src="./public/images/minor-healing-potion.png" alt="Minor Healing Potion"></td>
         <td>Potion de soins mineurs</td>
@@ -134,6 +137,7 @@ session_start();
         <td>Stock : 5</td>
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
+>>>>>>> a56d23438adac2f1b068a5b436b17c9a9bb41e4c
     </table>
   </section>
 
@@ -371,6 +375,8 @@ session_start();
   </div>
 
   <div class="cart-items">
+    <?php include "panier.php"?>
+
     <p>Le Panier est Vide</p>
   </div>
 </aside>
