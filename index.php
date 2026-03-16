@@ -57,69 +57,7 @@
   <section>
     <h3>Potions</h3>
     <table id="potions">
-      <tr>
-        <td><img src="./public/images/minor-healing-potion.png" alt="Minor Healing Potion"></td>
-        <td>Potion de soins mineurs</td>
-        <td>5 Argent</td>
-        <td>Soigne mineure au joueur pendant 5 secondes</td>
-        <td>Efficacité : 1</td>
-        <td>Stock : 10</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/greater-healing-potion.png" ></td>
-        <td>Potion de soins supérieurs</td>
-        <td>10 Argent</td>
-        <td>Regenere les points de vies du personnage pendant 15 secondes</td>
-        <td>Efficacité : 3</td>
-        <td>Stock : 15</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/mana-potion.png" ></td>
-        <td>Potion d'armure</td>
-        <td>15 Argent</td>
-        <td>Augmente la défense du personnage pendant 30 secondes</td>
-        <td>Efficacité : 5</td>
-        <td>Stock : 13</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/speed-potion.png" ></td>
-        <td>Potion de vitesse</td>
-        <td>10 Or</td>
-        <td>Augmente la vitesse pendant 15 secondes</td>
-        <td>Efficacité : 10</td>
-        <td>Stock : 10</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/strength-potion.png" ></td>
-        <td>Potion de force</td>
-        <td>15 Or</td>
-        <td>Augmenter la force d'attaque du personnage pendant 20 secondes</td>
-        <td>Efficacité : 5</td>
-        <td>Stock : 10</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/stamina-tonic.png" ></td>
-        <td>Potion d'endurance</td>
-        <td>15 Or</td>
-        <td>Augmentent les points de vies maximales du joueur pendant 20 secondes</td>
-        <td>Efficacité : 8</td>
-        <td>Stock : 15</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
-      <tr>
-        <td><img src="./public/images/invisibility-potion.png" alt="Invisibility Potion"></td>
-        <td>Potion d'invisibilité</td>
-        <td>25 Or</td>
-        <td>Deviens invisible pendant 30 secondes</td>
-        <td>Efficacité : 20</td>
-        <td>Stock : 5</td>
-        <td><button class="btn-add" type="button">Ajouter</button></td>
-      </tr>
+        <!-- include tableau items (potions) -->
     </table>
   </section>
 
@@ -361,6 +299,8 @@
   </div>
 
   <div class="cart-items">
+    <?php include "panier.php"?>
+
     <p>Le Panier est Vide</p>
   </div>
 </aside>
