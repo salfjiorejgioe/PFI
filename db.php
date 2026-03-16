@@ -15,8 +15,57 @@ try {
     die('Erreur connexion BD : ' . $e->getMessage());
 }
 
-function obtenirArticle($idItem){ //retournera toutes les infos d'un item
 
+function obtenir_Items($pdo, $typeItem){ //retournera tous les items de la bd selon le type
+    $sql = "SELECT 
+                idItem,
+                nom,
+                quantiteStock,
+                prix,
+                photo,
+                typeItem,
+                estDisponible
+            FROM Items
+            ORDER BY typeItem DESC
+            WHERE typeItem = ?";
+     try{
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($typeItem, );
+        $ligne = $stmt->fetch();
+        return $ligne;
+    }catch (Exception $e) {
+        return [];
+    }
+}
+
+
+
+
+
+function obtenir_article($pdo, $idItem) {
+
+
+    $sql = "SELECT 
+                idItem,
+                nom,
+                quantiteStock,
+                prix,
+                photo,
+                typeItem,
+                estDisponible
+            FROM Items
+            ORDER BY typeItem DESC";
+
+
+
+    try {
+        $stmt = $pdo->query($sql);
+        $articles = $stmt->fetchAll(); // toutes les lignes
+        return $articles;
+
+    } catch (Exception $e) {
+        return [];
+    }
 }
 
 
