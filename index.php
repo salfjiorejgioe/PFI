@@ -1,4 +1,6 @@
-
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -13,8 +15,20 @@
 <header>
   <div class="top-actions">
     <a id="cartBtn" href="#cart">🛒</a>
-    <a class="login-btn" href="login.php">Connexion</a>
-    <a class="login-btn" href="signup.php">Creation</a>
+
+    <?php if (isset($_SESSION['joueur_id'])): ?>
+        <span class="user-info">
+            Bonjour, <?php echo htmlspecialchars($_SESSION['joueur_alias']); ?> |
+            Solde :
+            <?php echo (int)$_SESSION['joueur_or']; ?> Or,
+            <?php echo (int)$_SESSION['joueur_argent']; ?> Argent,
+            <?php echo (int)$_SESSION['joueur_bronze']; ?> Bronze
+        </span>
+        <a class="login-btn" href="logout.php">Déconnexion</a>
+    <?php else: ?>
+        <a class="login-btn" href="login.php">Connexion</a>
+        <a class="login-btn" href="signup.php">Création</a>
+    <?php endif; ?>
   </div>
 
   <h1>Marché Darquest</h1>
@@ -22,7 +36,7 @@
 
   <nav>
     <ul>
-      <li><a href="index.html">Accueil</a></li>
+      <li><a href="index.php">Accueil</a></li>
       <li><a href="#">Inventaire</a></li>
       <li><a href="#">Vendre</a></li>
       <li><a href="#">Enigma</a></li>
@@ -33,10 +47,10 @@
   <section class="filtres">
     <input type="text" placeholder="Rechercher...">
 
-   <input type="checkbox"> Potions
-    <input type="checkbox"> Armures
-   <input type="checkbox"> Armes
-  <input type="checkbox"> Sorts
+    <label><input type="checkbox"> Potions</label>
+    <label><input type="checkbox"> Armures</label>
+    <label><input type="checkbox"> Armes</label>
+    <label><input type="checkbox"> Sorts</label>
   </section>
 </header>
 
@@ -53,7 +67,6 @@
     </table>
   </section>
 
-
   <section>
     <h3>Potions</h3>
     <table id="potions">
@@ -67,7 +80,7 @@
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
       <tr>
-        <td><img src="./public/images/greater-healing-potion.png" ></td>
+        <td><img src="./public/images/greater-healing-potion.png"></td>
         <td>Potion de soins supérieurs</td>
         <td>10 Argent</td>
         <td>Regenere les points de vies du personnage pendant 15 secondes</td>
@@ -76,7 +89,7 @@
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
       <tr>
-        <td><img src="./public/images/mana-potion.png" ></td>
+        <td><img src="./public/images/mana-potion.png"></td>
         <td>Potion d'armure</td>
         <td>15 Argent</td>
         <td>Augmente la défense du personnage pendant 30 secondes</td>
@@ -85,7 +98,7 @@
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
       <tr>
-        <td><img src="./public/images/speed-potion.png" ></td>
+        <td><img src="./public/images/speed-potion.png"></td>
         <td>Potion de vitesse</td>
         <td>10 Or</td>
         <td>Augmente la vitesse pendant 15 secondes</td>
@@ -94,7 +107,7 @@
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
       <tr>
-        <td><img src="./public/images/strength-potion.png" ></td>
+        <td><img src="./public/images/strength-potion.png"></td>
         <td>Potion de force</td>
         <td>15 Or</td>
         <td>Augmenter la force d'attaque du personnage pendant 20 secondes</td>
@@ -103,7 +116,7 @@
         <td><button class="btn-add" type="button">Ajouter</button></td>
       </tr>
       <tr>
-        <td><img src="./public/images/stamina-tonic.png" ></td>
+        <td><img src="./public/images/stamina-tonic.png"></td>
         <td>Potion d'endurance</td>
         <td>15 Or</td>
         <td>Augmentent les points de vies maximales du joueur pendant 20 secondes</td>
@@ -122,7 +135,6 @@
       </tr>
     </table>
   </section>
-
 
   <section>
     <h3>Armures</h3>
@@ -183,7 +195,6 @@
       </tr>
     </table>
   </section>
-
 
   <section>
     <h3>Armes</h3>
@@ -253,7 +264,6 @@
       </tr>
     </table>
   </section>
-
 
   <section>
     <h3>Sorts</h3>
@@ -353,11 +363,10 @@
 
 </main>
 
-
 <aside id="cart">
   <div class="cart-head">
     <h4>Panier</h4>
-    <a class="cart-close" href="#" >✕</a>
+    <a class="cart-close" href="#">✕</a>
   </div>
 
   <div class="cart-items">
@@ -366,4 +375,4 @@
 </aside>
 
 </body>
-</html> 
+</html>
