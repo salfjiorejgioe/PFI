@@ -3,10 +3,10 @@ session_start();
 require_once 'db.php';
 
 
-if (!isset($_SESSION['user']) || (int)($_SESSION['user']['estAdmin'] ?? 0) !== 1) {
+/*if (!isset($_SESSION['user']) || (int)($_SESSION['user']['estAdmin'] ?? 0) !== 1) {
     header('Location: index.php');
     exit;
-}
+}*/
 
 $message = '';
 $error = '';
