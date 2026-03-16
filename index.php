@@ -41,6 +41,7 @@ session_start();
       <li><a href="#">Vendre</a></li>
       <li><a href="#">Enigma</a></li>
       <li><a href="#">Profil</a></li>
+      <li><a href="admin.php">Admin</a></li>
     </ul>
   </nav>
 
