@@ -39,37 +39,4 @@ function obtenir_Items($pdo, $typeItem){ //retournera tous les items de la bd se
 }
 
 
-
-
-
-function obtenir_article($pdo, $idItem) {
-
-
-    $sql = "SELECT 
-                idItem,
-                nom,
-                quantiteStock,
-                prix,
-                photo,
-                typeItem,
-                estDisponible
-            FROM Items
-            ORDER BY typeItem DESC";
-
-
-
-    try {
-        $stmt = $pdo->query($sql);
-        $articles = $stmt->fetchAll(); // toutes les lignes
-        return $articles;
-
-    } catch (Exception $e) {
-        return [];
-    }
-}
-
-
-
-
-
 ?>

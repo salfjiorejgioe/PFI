@@ -2,8 +2,6 @@
 session_start();
 require_once 'db.php';
 
-
-
 $joueur_id = $_SESSION['joueur_id'];
 $joueur_alias = $_SESSION['joueur_alias'] ;
 $joueur_or = $_SESSION['joueur_or'];
@@ -11,10 +9,6 @@ $joueur_argent = $_SESSION['joueur_argent'];
 $joueur_bronze = $_SESSION['joueur_bronze'];
 $joueur_est_mage = $_SESSION['joueur_est_mage'];
 
-function payer(){
-
-
-}
 function obtenirArticlesPanier($pdo)
 {
     $sql = "SELECT 
@@ -31,28 +25,42 @@ function obtenirArticlesPanier($pdo)
         return [];
     }
 }
+
+function obtenir_article($pdo, $idItem) {
+
+
+    $sql = "SELECT 
+                idItem,
+                nom,
+                quantiteStock,
+                prix,
+                photo,
+                typeItem,
+                estDisponible
+            FROM Items
+            ORDER BY typeItem DESC
+            WHERE idItem = ?"; // pas fini
+
+
+    try {
+        $stmt = $pdo->query($sql);
+        $articles = $stmt->fetchAll(); // aussi inclure $idItem
+        return $articles;
+
+    } catch (Exception $e) {
+        return [];
+    }
+}
 $articles_panier = obtenirArticlesPanier();
-
-
-
-
-
-
-
 
 // question: en permanence vérifier si l'item est toujours disponible?
 foreach ($articles_panier as $articles){
-    $info_article = obtenirArticle();
+    $info_article = obtenir_article($articles['idItem']);
 
-    $nomItem = $article["nom"];
-    $quantite = $quantite["quantitePanier"];
-    $prix = $article["prix"];
-    $image = $article["photo"];
-                            $nomfichier = $article["chemin_image"];
-                            $vendeur = $article["usager"];
-                            $date = get_date($article["date_pub"]);
-                            $categorie = $article["nomcategorie"];
-                            $negtxt = "";
+    $nomItem = $info_article["nom"];
+    $quantite = $info_article["quantitePanier"];
+    $prix = $info_article["prix"];
+    $image = $info_article["photo"];
 
 
 
