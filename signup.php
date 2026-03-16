@@ -1,65 +1,121 @@
 <?php
+session_start();
+require_once 'db.php';
 
+$errors  = [];
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $alias    = trim($_POST['alias'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $nom      = trim($_POST['nom'] ?? '');
+    $prenom   = trim($_POST['prenom'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
+
+    if ($alias === '' || $password === '' || $nom === '') {
+        $errors[] = "Alias, mot de passe et nom sont obligatoires.";
+    }
+
+    if (empty($errors)) {
+        // Vérifier unicité alias
+        $stmt = $pdo->prepare("SELECT idJoueur FROM Joueurs WHERE alias = :alias");
+        $stmt->execute([':alias' => $alias]);
+        if ($stmt->fetch()) {
+            $errors[] = "Cet alias est déjà utilisé.";
+        } else {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            $insert = $pdo->prepare("
+                INSERT INTO Joueurs (
+                    alias,
+                    nom,
+                    prenom,
+                    MontantOr,
+                    MontantArgent,
+                    MontantBronze,
+                    EstMage,
+                    NbQuetesMagiquesFinis,
+                    NbQuetesFinis,
+                    nbInterventionsAdmin,
+                    mPasse,
+                    email,
+                    estAdmin
+                ) VALUES (
+                    :alias,
+                    :nom,
+                    :prenom,
+                    5,      -- MontantOr initial
+                    15,     -- MontantArgent initial
+                    30,     -- MontantBronze initial
+                    0,      -- EstMage
+                    0,      -- NbQuetesMagiquesFinis
+                    0,      -- NbQuetesFinis
+                    0,      -- nbInterventionsAdmin
+                    :mPasse,
+                    :email,
+                    0       -- estAdmin
+                )
+            ");
+
+            $insert->execute([
+                ':alias'  => $alias,
+                ':nom'    => $nom,
+                ':prenom' => $prenom,
+                ':mPasse' => $hash,
+                ':email'  => $email
+            ]);
+
+            $success = "Compte créé. Vous pouvez maintenant vous connecter.";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Inscription - Darquest</title>
+    <link rel="stylesheet" href="public/css/style.css">
 </head>
 <body>
-     <main>
-            <h1>Marché Darquest</h1>
+<header>
+    <h1>Création de compte</h1>
+</header>
 
-            <div>Entrez vos informations de création de compte.</div>
+<main class="auth-container">
+    <?php if ($errors): ?>
+        <div class="error">
+            <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>
+        </div>
+    <?php endif; ?>
 
-            <div class="col-md-4 mx-auto">                         
+    <?php if ($success): ?>
+        <div class="success">
+            <p><?php echo htmlspecialchars($success); ?></p>
+            <p><a href="login.php">Aller à la connexion</a></p>
+        </div>
+    <?php endif; ?>
 
-                <form method="post" novalidate>
+    <form action="signup.php" method="post" class="auth-form">
+        <label for="alias">Alias (username)</label>
+        <input type="text" name="alias" id="alias" required>
 
-                    <div class="mb-3">
-                        <label for="email" class="form-label"><span class="text-danger">* </span>Courriel</label>
-                        <input name="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" value="<?= htmlspecialchars($email) ?>" autofocus>
-                        <div id="emailHelp" class="form-text text-danger"><?= $messages['email'] ?? '' ?></div>
-                    </div>
+        <label for="nom">Nom</label>
+        <input type="text" name="nom" id="nom" required>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label"><span class="text-danger">* </span>Mot de passe</label>
-                        <input name="password" type="password" class="form-control" id="empasswordail" aria-describedby="passwordHelp">
-                        <div id="passwordHelp" class="form-text text-danger"><?= $messages['password'] ?? '' ?></div>
-                    </div>
+        <label for="prenom">Prénom</label>
+        <input type="text" name="prenom" id="prenom">
 
-                    <div class="mb-3">
-                        <label for="password2" class="form-label"><span class="text-danger">* </span>Confirmez le mot de passe</label>
-                        <input name="password2" type="password" class="form-control" id="empasswordail2" aria-describedby="password2Help">
-                        <div id="passwordHelp2" class="form-text text-danger"><?= $messages['password2'] ?? '' ?></div>
-                    </div>
+        <label for="email">Email (optionnel)</label>
+        <input type="email" name="email" id="email">
 
-                    <div>
-                        Le mot de passe doit contenir : 
-                        <ul>
-                            <li>au moins une lettre minuscule</li>
-                            <li>au moins une lettre majuscule</li>
-                            <li>au moins un chiffre</li>
-                            <li>au moins un symbole @#-_$%^&+=§!?</li>
-                        </ul>
+        <label for="password">Mot de passe</label>
+        <input type="password" name="password" id="password" required>
 
-                    </div>
+        <button type="submit">Créer le compte</button>
+    </form>
 
-                    <div class="py-3 text-danger">* Champs requis</div>
-                    
-                    <button type="submit" class="btn btn-primary">Envoyer</button>
-
-                </form>
-
-                <div id="global-message" class="my-3 <?= $globalMessageColor ?>"><?= $messages['global'] ?? '' ?></dib>
-
-                <div class="py-3"><a href="login.php">Connexion à un compte</a></div>
-
-            </div>
-            <!--Formulaire authenfification-Authentication form-->
-
-        </main>
+    <p>Déjà un compte ? <a href="login.php">Connexion</a></p>
+</main>
 </body>
 </html>
