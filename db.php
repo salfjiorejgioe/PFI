@@ -15,4 +15,12 @@ try {
     die('Erreur connexion BD : ' . $e->getMessage());
 }
 
+function obtenirArticle($idItem){ //retournera toutes les infos d'un item
+
+}
+
+
+
+
+
 ?>

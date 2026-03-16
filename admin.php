@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'disab
 
     if ($idItem > 0) {
         try {
-            $stmt = $pdo->prepare("UPDATE Items SET estDisponible = 0 WHERE idItem = :idItem");
+            $stmt = $e->prepare("UPDATE Items SET estDisponible = 0 WHERE idItem = :idItem");
             $stmt->execute([':idItem' => $idItem]);
             $message = "Item retiré de la vente avec succès.";
         } catch (PDOException $e) {
