@@ -67,7 +67,10 @@ session_start();
       </tr>
     </table>
   </section>
-  
+
+
+
+
 </main>
 
 <aside id="cart">
