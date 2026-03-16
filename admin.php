@@ -2,16 +2,6 @@
 session_start();
 require_once 'db.php';
 
-/*
-  Hypothèse:
-  Après connexion, tu stockes l'utilisateur dans $_SESSION['user']
-  Exemple:
-  $_SESSION['user'] = [
-      'idJoueur' => ...,
-      'alias' => ...,
-      'estAdmin' => ...
-  ];
-*/
 
 if (!isset($_SESSION['user']) || (int)($_SESSION['user']['estAdmin'] ?? 0) !== 1) {
     header('Location: index.php');
@@ -25,9 +15,6 @@ function h($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-/* =========================
-   AJOUT ITEM
-========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_item') {
     $nom = trim($_POST['nom'] ?? '');
     $quantiteStock = (int)($_POST['quantiteStock'] ?? 0);
@@ -63,9 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_i
     }
 }
 
-/* =========================
-   SUPPRESSION LOGIQUE
-========================= */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'disable_item') {
     $idItem = (int)($_POST['idItem'] ?? 0);
 
@@ -80,9 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'disab
     }
 }
 
-/* =========================
-   RÉACTIVER ITEM
-========================= */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enable_item') {
     $idItem = (int)($_POST['idItem'] ?? 0);
 
@@ -97,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enabl
     }
 }
 
-/* =========================
-   LISTE ITEMS
-========================= */
+
 try {
     $stmt = $pdo->query("SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
                          FROM Items
