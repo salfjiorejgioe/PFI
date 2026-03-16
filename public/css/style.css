@@ -4,7 +4,6 @@
   .top-actions{
     position: static;
     justify-content: center;
-<<<<<<< HEAD
     margin: 10px 0;
   }
 }
@@ -361,9 +360,6 @@ table{
   display: grid;
   gap: 10px;
 }
-=======
-    margin-top: 20px;
-} 
 
 .barreRecherche input {
     width: 100%;
@@ -442,4 +438,118 @@ table{
     width: 100px;
     height: 100px;
   }
->>>>>>> parent of eb7cd04 (Header Update avec image)
+         .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        .admin-title {
+            margin-bottom: 1rem;
+        }
+
+        .msg-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .msg-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .admin-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .admin-form input,
+        .admin-form select {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .admin-form button,
+        .action-btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .admin-form button {
+            background: #2563eb;
+            color: white;
+        }
+
+        .disable-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .enable-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: white;
+            display: inline-block;
+        }
+
+        .badge.A { background: #2563eb; }
+        .badge.R { background: #7c3aed; }
+        .badge.P { background: #ea580c; }
+        .badge.S { background: #16a34a; }
+
+        img.item-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+
+        .status-on {
+            color: #166534;
+            font-weight: 600;
+        }
+
+        .status-off {
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+  
+
