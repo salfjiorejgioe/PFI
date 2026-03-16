@@ -2,7 +2,7 @@
 session_start();
 require_once 'db.php';
 
-functi
+
 
 $joueur_id = $_SESSION['joueur_id'];
 $joueur_alias = $_SESSION['joueur_alias'] ;
