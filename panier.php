@@ -15,7 +15,7 @@ function payer(){
 
 
 }
-function obtenirArticlesPanier()
+function obtenirArticlesPanier($pdo)
 {
     $sql = "SELECT 
                 idJoueur,
@@ -31,7 +31,7 @@ function obtenirArticlesPanier()
         return [];
     }
 }
-$articles_panier = obtenirArticlesPanier()
+$articles_panier = obtenirArticlesPanier();
 
 
 
@@ -41,7 +41,7 @@ $articles_panier = obtenirArticlesPanier()
 
 
 // question: en permanence vérifier si l'item est toujours disponible?
-foreach($articles_panier as $articles){
+foreach ($articles_panier as $articles){
     $info_article = obtenirArticle();
 
     $nomItem = $article["nom"];
@@ -56,15 +56,10 @@ foreach($articles_panier as $articles){
 
 
 
-    echo '
-            <div>
-    
-    
-    
-    
-    '
-    }
+}
+
 
 
 
 ?>
+        
