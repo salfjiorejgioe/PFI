@@ -365,7 +365,7 @@ table{
 }
 
 .cart-items{
-  scroll-behavior: smooth;
+  overflow-y: scroll;
   display: grid;
   gap: 10px;
 }
