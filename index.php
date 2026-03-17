@@ -52,16 +52,38 @@ foreach ($items as $item) {
   <div class="top-actions">
     <a id="cartBtn" href="#cart">🛒</a>
 
-    <?php if (isset($_SESSION['joueur_id'])): ?>
-        <span class="user-info">
-            Bonjour, <?php echo h($_SESSION['joueur_alias']); ?> |
-            Solde :
-            <?php echo (int)$_SESSION['joueur_or']; ?> Gold,
-            <?php echo (int)$_SESSION['joueur_argent']; ?> Argent,
-            <?php echo (int)$_SESSION['joueur_bronze']; ?> Bronze
-        </span>
-        <a class="login-btn" href="logout.php">Déconnexion</a>
-    <?php else: ?>
+<?php if (isset($_SESSION['joueur_id'])): ?>
+    <div class="user-info">
+        <div class="user-info-top">
+            <span class="user-name">Bonjour, <?php echo h($_SESSION['joueur_alias']); ?></span>
+            <span class="user-role">
+                <?php echo !empty($_SESSION['joueur_estMage']) ? 'Est mage' : 'Pas mage'; ?>
+            </span>
+        </div>
+
+        <div class="user-wallet">
+            <div class="wallet-item gold">
+                <span class="wallet-emoji">🪙</span>
+                <span class="wallet-label">Gold</span>
+                <span class="wallet-value"><?php echo (int)$_SESSION['joueur_or']; ?></span>
+            </div>
+
+            <div class="wallet-item silver">
+                <span class="wallet-emoji">🥈</span>
+                <span class="wallet-label">Argent</span>
+                <span class="wallet-value"><?php echo (int)$_SESSION['joueur_argent']; ?></span>
+            </div>
+
+            <div class="wallet-item bronze">
+                <span class="wallet-emoji">🥉</span>
+                <span class="wallet-label">Bronze</span>
+                <span class="wallet-value"><?php echo (int)$_SESSION['joueur_bronze']; ?></span>
+            </div>
+        </div>
+    </div>
+
+    <a class="login-btn" href="logout.php">Déconnexion</a>
+<?php else: ?>
         <a class="login-btn" href="login.php">Connexion</a>
         <a class="login-btn" href="signup.php">Création</a>
     <?php endif; ?>

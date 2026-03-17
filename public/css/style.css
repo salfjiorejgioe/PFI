@@ -4,7 +4,13 @@
   .top-actions{
     position: static;
     justify-content: center;
+    align-items: center;
     margin: 10px 0;
+  }
+
+  .user-info{
+    width: 100%;
+    max-width: 420px;
   }
 }
 
@@ -42,7 +48,9 @@ header{
   right: 14px;
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .icon-btn{
@@ -618,4 +626,91 @@ img.item-thumb {
     border-radius: 14px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.10);
+}
+
+.user-info{
+  min-width: 290px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+}
+
+.user-info-top{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.user-name{
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+
+.user-role{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  white-space: nowrap;
+}
+
+.user-wallet{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wallet-item{
+  flex: 1 1 85px;
+  min-width: 85px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.wallet-emoji{
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.wallet-label{
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.wallet-value{
+  display: block;
+  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.wallet-item.gold .wallet-value,
+.wallet-item.gold .wallet-label{
+  color: #f6d26a;
+}
+
+.wallet-item.silver .wallet-value,
+.wallet-item.silver .wallet-label{
+  color: #d9d9d9;
+}
+
+.wallet-item.bronze .wallet-value,
+.wallet-item.bronze .wallet-label{
+  color: #c47a3a;
 }

@@ -23,6 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE alias = :alias
             LIMIT 1
         ");
+
+        // yo fuat changer les noms des colonnes  (noms de colonnes BD)
+// mPasse à motDePasse
+// MontantOr à gold
+// MontantArgent à argent
+// MontantBronze à bronze
+// EstMage à estMage
+//
+// Aussi changer :
+// $_SESSION['joueur_est_mage'] à $_SESSION['joueur_estMage'] 
+// ty j'en ai besoin pour l'affichage dans la page index.php
         $stmt->execute([':alias' => $alias]);
         $joueur = $stmt->fetch();
 

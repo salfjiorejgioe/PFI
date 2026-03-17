@@ -12,13 +12,14 @@ $message = "";
 $error = "";
 
 // Fonction pour sécuriser l'affichage
-function h($texte) {
+function h($texte)
+{
     return htmlspecialchars($texte, ENT_QUOTES, 'UTF-8');
 }
 
-// =========================
-// AJOUT D'UN ITEM
-// =========================
+
+// ajouter un item
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_item') {
 
     $nom = trim($_POST['nom']);
@@ -110,9 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// =========================
-// RETIRER UN ITEM DE LA VENTE
-// =========================
+// rendre indisponible un item
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'disable_item') {
     $idItem = (int) $_POST['idItem'];
 
@@ -128,9 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// =========================
-// REMETTRE UN ITEM EN VENTE
-// =========================
+
+// Rendre disponible pour la vente un item qui était retiré
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'enable_item') {
     $idItem = (int) $_POST['idItem'];
 
@@ -146,9 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// =========================
-// CHARGER LES ITEMS
-// =========================
+
+// charger les items pour les afficher dans la table
+
 try {
     $sql = "SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
             FROM Items
@@ -163,6 +163,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -313,35 +314,36 @@ try {
     </div>
 
     <script>
-    const typeItem = document.getElementById("typeItem");
-    const arme = document.getElementById("fields-arme");
-    const armure = document.getElementById("fields-armure");
-    const potion = document.getElementById("fields-potion");
-    const sort = document.getElementById("fields-sort");
+        const typeItem = document.getElementById("typeItem");
+        const arme = document.getElementById("fields-arme");
+        const armure = document.getElementById("fields-armure");
+        const potion = document.getElementById("fields-potion");
+        const sort = document.getElementById("fields-sort");
 
-    function cacherTousLesChamps() {
-        arme.style.display = "none";
-        armure.style.display = "none";
-        potion.style.display = "none";
-        sort.style.display = "none";
-    }
-
-    function afficherBonsChamps() {
-        cacherTousLesChamps();
-
-        if (typeItem.value === "A") {
-            arme.style.display = "block";
-        } else if (typeItem.value === "R") {
-            armure.style.display = "block";
-        } else if (typeItem.value === "P") {
-            potion.style.display = "block";
-        } else if (typeItem.value === "S") {
-            sort.style.display = "block";
+        function cacherTousLesChamps() {
+            arme.style.display = "none";
+            armure.style.display = "none";
+            potion.style.display = "none";
+            sort.style.display = "none";
         }
-    }
 
-    typeItem.addEventListener("change", afficherBonsChamps);
-    afficherBonsChamps();
+        function afficherBonsChamps() {
+            cacherTousLesChamps();
+
+            if (typeItem.value === "A") {
+                arme.style.display = "block";
+            } else if (typeItem.value === "R") {
+                armure.style.display = "block";
+            } else if (typeItem.value === "P") {
+                potion.style.display = "block";
+            } else if (typeItem.value === "S") {
+                sort.style.display = "block";
+            }
+        }
+
+        typeItem.addEventListener("change", afficherBonsChamps);
+        afficherBonsChamps();
     </script>
 </body>
+
 </html>
