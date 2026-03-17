@@ -59,12 +59,15 @@ $articles_panier = obtenirArticlesPanier($pdo);
 
 // question: en permanence vérifier si l'item est toujours disponible?
 foreach ($articles_panier as $articles){
-    $info_article = obtenir_article($articles['idItem']);
+    $info_article = obtenir_article($pdo, $articles['idItem']);
 
     $nomItem = $info_article["nom"];
     $quantite = $info_article["quantitePanier"];
     $prix = $info_article["prix"];
     $image = $info_article["photo"];
+
+
+    echo '<div> '. $nomItem .' </div>'
 
 
 
