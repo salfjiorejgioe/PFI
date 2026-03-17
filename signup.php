@@ -74,6 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Inscription - Darquest</title>
     <link rel="stylesheet" href="public/css/style.css">
+    <title>Inscription - Darquest</title>
+    <link rel="stylesheet" href="public/css/style.css">
 </head>
 
 <body>

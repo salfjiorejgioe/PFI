@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($alias === '' || $password === '') {
         $errors[] = "Alias et mot de passe sont obligatoires.";
     } else {
+
+        //  j'ai changé les noms de colonnes pour avoir les memes noms que dans la BD
         $stmt = $pdo->prepare("
             SELECT idJoueur,
                    alias,
@@ -23,18 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE alias = :alias
             LIMIT 1
         ");
+
         $stmt->execute([':alias' => $alias]);
         $joueur = $stmt->fetch();
 
+        // j'ai changé mpasee à motDePasse et j'ai gardé le password_verify pour comparer le mot de passe entré avec le hash stocké en BD
         if (!$joueur || !password_verify($password, $joueur['motDePasse'])) {
             $errors[] = "Alias ou mot de passe invalide.";
         } else {
             $_SESSION['joueur_id']       = $joueur['idJoueur'];
             $_SESSION['joueur_alias']    = $joueur['alias'];
+
+            // j'ai changé Montant en or à gold argent et bronze comme dans la bd
             $_SESSION['joueur_or']       = (int)$joueur['gold'];
             $_SESSION['joueur_argent']   = (int)$joueur['argent'];
             $_SESSION['joueur_bronze']   = (int)$joueur['bronze'];
-            $_SESSION['joueur_est_mage'] = (int)$joueur['estMage'] === 1;
+
+            // j'ai  changé nom session pour correspondre à index.php
+            // j'en avais besoin pour le log in dans la page index.php pour afficher le nom du joueur et aussi pour vérifier si le joueur est mage ou pas pour afficher les items de magie
+            $_SESSION['joueur_estMage']  = (int)$joueur['estMage'];
 
             header('Location: index.php');
             exit;
