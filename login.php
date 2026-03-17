@@ -11,41 +11,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($alias === '' || $password === '') {
         $errors[] = "Alias et mot de passe sont obligatoires.";
     } else {
+
+        //  j'ai changé les noms de colonnes pour avoir les memes noms que dans la BD
         $stmt = $pdo->prepare("
             SELECT idJoueur,
                    alias,
-                   mPasse,
-                   MontantOr,
-                   MontantArgent,
-                   MontantBronze,
-                   EstMage
+                   motDePasse,
+                   gold,
+                   argent,
+                   bronze,
+                   estMage
             FROM Joueurs
             WHERE alias = :alias
             LIMIT 1
         ");
 
-        // yo fuat changer les noms des colonnes  (noms de colonnes BD)
-// mPasse à motDePasse
-// MontantOr à gold
-// MontantArgent à argent
-// MontantBronze à bronze
-// EstMage à estMage
-//
-// Aussi changer :
-// $_SESSION['joueur_est_mage'] à $_SESSION['joueur_estMage'] 
-// ty j'en ai besoin pour l'affichage dans la page index.php
         $stmt->execute([':alias' => $alias]);
         $joueur = $stmt->fetch();
 
-        if (!$joueur || !password_verify($password, $joueur['mPasse'])) {
+        // j'ai changé mpasee à motDePasse et j'ai gardé le password_verify pour comparer le mot de passe entré avec le hash stocké en BD
+        if (!$joueur || !password_verify($password, $joueur['motDePasse'])) {
             $errors[] = "Alias ou mot de passe invalide.";
         } else {
             $_SESSION['joueur_id']       = $joueur['idJoueur'];
             $_SESSION['joueur_alias']    = $joueur['alias'];
-            $_SESSION['joueur_or']       = (int)$joueur['MontantOr'];
-            $_SESSION['joueur_argent']   = (int)$joueur['MontantArgent'];
-            $_SESSION['joueur_bronze']   = (int)$joueur['MontantBronze'];
-            $_SESSION['joueur_est_mage'] = (int)$joueur['EstMage'] === 1;
+
+            // j'ai changé Montant en or à gold argent et bronze comme dans la bd
+            $_SESSION['joueur_or']       = (int)$joueur['gold'];
+            $_SESSION['joueur_argent']   = (int)$joueur['argent'];
+            $_SESSION['joueur_bronze']   = (int)$joueur['bronze'];
+
+            // j'ai  changé nom session pour correspondre à index.php
+            // j'en avais besoin pour le log in dans la page index.php pour afficher le nom du joueur et aussi pour vérifier si le joueur est mage ou pas pour afficher les items de magie
+            $_SESSION['joueur_estMage']  = (int)$joueur['estMage'];
 
             header('Location: index.php');
             exit;
