@@ -1,65 +1,122 @@
 <?php
+session_start();
+require_once 'db.php';
 
+$errors = [];
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $alias = trim($_POST['alias'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $nom = trim($_POST['nom'] ?? '');
+    $prenom = trim($_POST['prenom'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+
+    if ($alias === '' || $password === '' || $nom === '') {
+        $errors[] = "Alias, mot de passe et nom sont obligatoires.";
+    }
+
+    if (empty($errors)) {
+        // Vérifier unicité alias
+        $stmt = $pdo->prepare("SELECT idJoueur FROM Joueurs WHERE alias = :alias");
+        $stmt->execute([':alias' => $alias]);
+        if ($stmt->fetch()) {
+            $errors[] = "Cet alias est déjà utilisé.";
+        } else {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            $insert = $pdo->prepare("
+    INSERT INTO Joueurs (
+        alias,
+        nom,
+        prenom,
+        gold,
+        argent,
+        bronze,
+        estMage,
+        motDePasse,
+        courriel,
+        estAdmin,
+        pointsVie
+    ) VALUES (
+        :alias,
+        :nom,
+        :prenom,
+        5,      -- gold initial
+        15,     -- argent initial
+        30,     -- bronze initial
+        0,      -- estMage
+        :motDePasse,
+        :courriel,
+        0,      -- estAdmin
+        50      -- pointsVie
+    )
+");
+
+            $insert->execute([
+                ':alias' => $alias,
+                ':nom' => $nom,
+                ':prenom' => $prenom,
+                ':motDePasse' => $hash,
+                ':courriel' => $email   // même variable, mais colonne = courriel
+            ]);
+
+
+            $success = "Compte créé. Vous pouvez maintenant vous connecter.";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Inscription - Darquest</title>
+    <link rel="stylesheet" href="public/css/style.css">
 </head>
+
 <body>
-     <main>
-            <h1>Marché Darquest</h1>
+    <header>
+        <h1>Création de compte</h1>
+    </header>
 
-            <div>Entrez vos informations de création de compte.</div>
-
-            <div class="col-md-4 mx-auto">                         
-
-                <form method="post" novalidate>
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label"><span class="text-danger">* </span>Courriel</label>
-                        <input name="email" type="email" class="form-control" id="email" aria-describedby="emailHelp" value="<?= htmlspecialchars($email) ?>" autofocus>
-                        <div id="emailHelp" class="form-text text-danger"><?= $messages['email'] ?? '' ?></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label"><span class="text-danger">* </span>Mot de passe</label>
-                        <input name="password" type="password" class="form-control" id="empasswordail" aria-describedby="passwordHelp">
-                        <div id="passwordHelp" class="form-text text-danger"><?= $messages['password'] ?? '' ?></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password2" class="form-label"><span class="text-danger">* </span>Confirmez le mot de passe</label>
-                        <input name="password2" type="password" class="form-control" id="empasswordail2" aria-describedby="password2Help">
-                        <div id="passwordHelp2" class="form-text text-danger"><?= $messages['password2'] ?? '' ?></div>
-                    </div>
-
-                    <div>
-                        Le mot de passe doit contenir : 
-                        <ul>
-                            <li>au moins une lettre minuscule</li>
-                            <li>au moins une lettre majuscule</li>
-                            <li>au moins un chiffre</li>
-                            <li>au moins un symbole @#-_$%^&+=§!?</li>
-                        </ul>
-
-                    </div>
-
-                    <div class="py-3 text-danger">* Champs requis</div>
-                    
-                    <button type="submit" class="btn btn-primary">Envoyer</button>
-
-                </form>
-
-                <div id="global-message" class="my-3 <?= $globalMessageColor ?>"><?= $messages['global'] ?? '' ?></dib>
-
-                <div class="py-3"><a href="login.php">Connexion à un compte</a></div>
-
+    <main class="auth-container">
+        <?php if ($errors): ?>
+            <div class="error">
+                <?php foreach ($errors as $e)
+                    echo "<p>" . htmlspecialchars($e) . "</p>"; ?>
             </div>
-            <!--Formulaire authenfification-Authentication form-->
+        <?php endif; ?>
 
-        </main>
+        <?php if ($success): ?>
+            <div class="success">
+                <p><?php echo htmlspecialchars($success); ?></p>
+                <p><a href="login.php">Aller à la connexion</a></p>
+            </div>
+        <?php endif; ?>
+
+        <form action="signup.php" method="post" class="auth-form">
+            <label for="alias">Alias (username)</label>
+            <input type="text" name="alias" id="alias" required>
+
+            <label for="nom">Nom</label>
+            <input type="text" name="nom" id="nom" required>
+
+            <label for="prenom">Prénom</label>
+            <input type="text" name="prenom" id="prenom">
+
+            <label for="email">Email (optionnel)</label>
+            <input type="email" name="email" id="email">
+
+            <label for="password">Mot de passe</label>
+            <input type="password" name="password" id="password" required>
+
+            <button type="submit">Créer le compte</button>
+        </form>
+
+        <p>Déjà un compte ? <a href="login.php">Connexion</a></p>
+    </main>
 </body>
+
 </html>
