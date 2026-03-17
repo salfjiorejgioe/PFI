@@ -2,7 +2,7 @@
 session_start();
 require_once 'db.php';
 
-$errors  = [];
+$errors = [];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -30,39 +30,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     alias,
                     nom,
                     prenom,
-                    MontantOr,
-                    MontantArgent,
-                    MontantBronze,
-                    EstMage,
-                    NbQuetesMagiquesFinis,
-                    NbQuetesFinis,
-                    nbInterventionsAdmin,
-                    mPasse,
-                    email,
-                    estAdmin
+                    gold,
+                    argent,
+                    bronze,
+                    estMage,
+                    motDePasse,
+                    courriel,
+                    estAdmin,
+                    pointsVie
                 ) VALUES (
                     :alias,
                     :nom,
                     :prenom,
-                    5,      -- MontantOr initial
-                    15,     -- MontantArgent initial
-                    30,     -- MontantBronze initial
-                    0,      -- EstMage
-                    0,      -- NbQuetesMagiquesFinis
-                    0,      -- NbQuetesFinis
-                    0,      -- nbInterventionsAdmin
-                    :mPasse,
-                    :email,
-                    0       -- estAdmin
+                    5,      -- gold initial
+                    15,     -- argent initial
+                    30,     -- bronze initial
+                    0,      -- estMage
+                    :motDePasse,
+                    :courriel,
+                    0,      -- estAdmin
+                    50      -- pointsVie
                 )
             ");
 
             $insert->execute([
-                ':alias'  => $alias,
-                ':nom'    => $nom,
-                ':prenom' => $prenom,
-                ':mPasse' => $hash,
-                ':email'  => $email
+                ':alias'      => $alias,
+                ':nom'        => $nom,
+                ':prenom'     => $prenom,
+                ':motDePasse' => $hash,
+                ':courriel'   => $email
             ]);
 
             $success = "Compte créé. Vous pouvez maintenant vous connecter.";
@@ -82,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Création de compte</h1>
 </header>
 
-<main class="auth-container">
+<main class="auth-container signup-page">
     <?php if ($errors): ?>
         <div class="error">
             <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>
