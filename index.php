@@ -56,7 +56,7 @@ foreach ($items as $item) {
         <span class="user-info">
             Bonjour, <?php echo h($_SESSION['joueur_alias']); ?> |
             Solde :
-            <?php echo (int)$_SESSION['joueur_or']; ?> Or,
+            <?php echo (int)$_SESSION['joueur_or']; ?> Gold,
             <?php echo (int)$_SESSION['joueur_argent']; ?> Argent,
             <?php echo (int)$_SESSION['joueur_bronze']; ?> Bronze
         </span>
