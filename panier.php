@@ -1,5 +1,4 @@
-<?php 
-session_start();
+<?php
 require_once 'db.php';
 
 $joueur_id = $_SESSION['joueur_id'];
@@ -44,7 +43,7 @@ function obtenir_article($pdo, $idItem) {
 
     try {
         $stmt = $pdo->query($sql);
-        $articles = $stmt->fetchAll(); // aussi inclure $idItem
+        $articles = $stmt->fetchAll(); 
         return $articles;
 
     } catch (Exception $e) {
