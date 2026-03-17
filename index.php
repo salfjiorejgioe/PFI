@@ -183,6 +183,9 @@ foreach ($items as $item) {
     <h4>Panier</h4>
     <a class="cart-close" href="#">✕</a>
   </div>
+  <form method="post">
+    <input type="submit" value="Acheter">
+  </form>
 
   <div class="cart-items">
     <?php include "panier.php"; ?>

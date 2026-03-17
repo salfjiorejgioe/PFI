@@ -67,14 +67,26 @@ foreach ($articles_panier as $articles){
     $image = $info_article["photo"];
 
 
-    echo '<div> '. $nomItem .' </div>'
+    echo '
+    <div class="panier-item-grid">
+            <img src="' . $image . '">
+            <h3>' . $nomItem . '</h3>
+            <p>' . $prix . '</p>
+            <p>' . $quantite . '</p>
+    </div>
+    ';
 
+    // avec lien vers details?
 
-
+    // echo '
+    // <div class="panier-item-grid">
+    //     <a class="item-card" href="details.php?id='.$articles['idItem'] .'">
+    //         <img src="' . $image . '">
+    //         <h3>' . $nomItem . '</h3>
+    //         <p>' . $prix . '</p>
+    //         <p>' . $quantite . '</p>
+    //     </a>
+    // </div>
+    // ';
 }
-
-
-
-
 ?>
-        
