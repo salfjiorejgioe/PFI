@@ -57,13 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Connexion - Darquest</title>
     <link rel="stylesheet" href="public/css/style.css">
+    <!-- Import Google Fonts for Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <header>
     <h1>Connexion</h1>
 </header>
 
-<main class="auth-container">
+<!-- Scoped wrapper: CSS ONLY applies within this main -->
+<main class="darquest-login auth-container">
     <?php if ($errors): ?>
         <div class="error">
             <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>

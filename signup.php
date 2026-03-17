@@ -26,39 +26,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $insert = $pdo->prepare("
-    INSERT INTO Joueurs (
-        alias,
-        nom,
-        prenom,
-        gold,
-        argent,
-        bronze,
-        estMage,
-        motDePasse,
-        courriel,
-        estAdmin,
-        pointsVie
-    ) VALUES (
-        :alias,
-        :nom,
-        :prenom,
-        5,      -- gold initial
-        15,     -- argent initial
-        30,     -- bronze initial
-        0,      -- estMage
-        :motDePasse,
-        :courriel,
-        0,      -- estAdmin
-        50      -- pointsVie
-    )
-");
+                INSERT INTO Joueurs (
+                    alias,
+                    nom,
+                    prenom,
+                    gold,
+                    argent,
+                    bronze,
+                    estMage,
+                    motDePasse,
+                    courriel,
+                    estAdmin,
+                    pointsVie
+                ) VALUES (
+                    :alias,
+                    :nom,
+                    :prenom,
+                    5,      -- gold initial
+                    15,     -- argent initial
+                    30,     -- bronze initial
+                    0,      -- estMage
+                    :motDePasse,
+                    :courriel,
+                    0,      -- estAdmin
+                    50      -- pointsVie
+                )
+            ");
 
             $insert->execute([
-                ':alias' => $alias,
-                ':nom' => $nom,
+                ':alias'  => $alias,
+                ':nom'    => $nom,
                 ':prenom' => $prenom,
-                ':motDePasse' => $hash,
-                ':courriel' => $email   // même variable, mais colonne = courriel
+                ':mPasse' => $hash,
+                ':email'  => $email
             ]);
 
 
@@ -83,13 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Création de compte</h1>
     </header>
 
-    <main class="auth-container">
-        <?php if ($errors): ?>
-            <div class="error">
-                <?php foreach ($errors as $e)
-                    echo "<p>" . htmlspecialchars($e) . "</p>"; ?>
-            </div>
-        <?php endif; ?>
+<main class="auth-container">
+    <?php if ($errors): ?>
+        <div class="error">
+            <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>
+        </div>
+    <?php endif; ?>
 
         <?php if ($success): ?>
             <div class="success">
