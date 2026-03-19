@@ -59,7 +59,7 @@ foreach ($items as $item) {
 <?php include_once 'template/header.php' ?>
 <main>
 <section id="filtres">
-    <input type="text" placeholder="Rechercher...">
+    <input id="barreRecherche" type="text" placeholder="Rechercher...">
     <label><input type="checkbox"> Potions</label>
     <label><input type="checkbox"> Armures</label>
     <label><input type="checkbox"> Armes</label>
@@ -194,4 +194,43 @@ foreach ($items as $item) {
 </aside>
 
 </body>
+<script>
+  // script pour la barre de recherche et les filtres selectifs
+ Document.addEventListener('DOMContentLoaded', function() {
+  Document.querySelector('#filtres input[type="text"]').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll('.item-card').forEach(function(card) {
+      const nom = card.querySelector('h3').textContent.toLowerCase();
+      if (nom.includes(query)) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+  Document.getElementById('barreRecherche').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll('.item-card').forEach(function(card) {
+      const nom = card.querySelector('h3').textContent.toLowerCase();
+      if (nom.includes(query)) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+  function toggleSelected(checkbox) {
+    checkbox.classList.toggle('selected');
+  }
+  function multipleSelection(checkbox) {
+    const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
+    checkboxes.forEach(function(cb) {
+      if (cb !== checkbox) {
+        cb.checked = false;
+        cb.classList.remove('selected');
+      }
+    });
+    toggleSelected(checkbox);
+  }
+</script>
 </html>
