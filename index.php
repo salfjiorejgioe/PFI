@@ -60,11 +60,11 @@ foreach ($items as $item) {
 <main>
 <section id="filtres">
     <input id="barreRecherche" type="text" placeholder="Rechercher...">
-    <label><input type="checkbox"> Potions</label>
-    <label><input type="checkbox"> Armures</label>
-    <label><input type="checkbox"> Armes</label>
-    <label><input type="checkbox"> Sorts</label>
-  </section>
+    <label><input type="checkbox" value="potions"> Potions</label>
+    <label><input type="checkbox" value="armures"> Armures</label>
+    <label><input type="checkbox" value="armes"> Armes</label>
+    <label><input type="checkbox" value="sorts"> Sorts</label>
+</section>  
   <section>
     <h3>Conversion de l'unité</h3>
     <table id="conversion-monnaie">
@@ -195,42 +195,63 @@ foreach ($items as $item) {
 
 </body>
 <script>
-  // script pour la barre de recherche et les filtres selectifs
- Document.addEventListener('DOMContentLoaded', function() {
-  Document.querySelector('#filtres input[type="text"]').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    document.querySelectorAll('.item-card').forEach(function(card) {
-      const nom = card.querySelector('h3').textContent.toLowerCase();
-      if (nom.includes(query)) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
-  Document.getElementById('barreRecherche').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    document.querySelectorAll('.item-card').forEach(function(card) {
-      const nom = card.querySelector('h3').textContent.toLowerCase();
-      if (nom.includes(query)) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
-  function toggleSelected(checkbox) {
-    checkbox.classList.toggle('selected');
-  }
-  function multipleSelection(checkbox) {
+document.addEventListener('DOMContentLoaded', function () {
+    const barreRecherche = document.getElementById('barreRecherche');
     const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
-    checkboxes.forEach(function(cb) {
-      if (cb !== checkbox) {
-        cb.checked = false;
-        cb.classList.remove('selected');
-      }
+    const sections = document.querySelectorAll('.section-items');
+
+    function appliquerFiltres() {
+        const recherche = barreRecherche.value.toLowerCase().trim();
+
+        // Types cochés
+        const typesSelectionnes = [];
+        checkboxes.forEach(function (checkbox) {
+            if (checkbox.checked) {
+                const texteLabel = checkbox.parentElement.textContent.trim().toLowerCase();
+                typesSelectionnes.push(texteLabel);
+            }
+        });
+
+        sections.forEach(function (section) {
+            const typeSection = section.querySelector('h2').textContent.trim().toLowerCase();
+            const cartes = section.querySelectorAll('.item-card');
+            let auMoinsUneVisible = false;
+
+            cartes.forEach(function (carte) {
+                const nomItem = carte.querySelector('h3').textContent.toLowerCase();
+
+                const matchRecherche = nomItem.includes(recherche);
+
+                // Si aucune checkbox cochée, on accepte tous les types
+                const matchType = typesSelectionnes.length === 0 || typesSelectionnes.includes(typeSection);
+
+                if (matchRecherche && matchType) {
+                    carte.style.display = '';
+                    auMoinsUneVisible = true;
+                } else {
+                    carte.style.display = 'none';
+                }
+            });
+
+            // Cacher la section complète s'il n'y a aucun item visible
+            if (auMoinsUneVisible) {
+                section.style.display = '';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    }
+
+    // Recherche en direct
+    barreRecherche.addEventListener('input', appliquerFiltres);
+
+    // Filtres checkbox
+    checkboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', appliquerFiltres);
     });
-    toggleSelected(checkbox);
-  }
+
+    // Lancer une première fois au chargement
+    appliquerFiltres();
+});
 </script>
 </html>
