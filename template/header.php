@@ -53,9 +53,9 @@
       <li><a href="#">Vendre</a></li>
       <li><a href="#">Enigma</a></li>
       <li><a href="#">Profil</a></li>
-      <?php if (!empty($_SESSION['joueur_estAdmin']) && (int)$_SESSION['joueur_estAdmin'] === 1): ?>
-    <a href="admin.php">Admin</a>
-<?php endif; ?>
+       <?php if (!empty($_SESSION['joueur_estAdmin']) && (int)$_SESSION['joueur_estAdmin'] === 1): ?>
+      <li><a href="admin.php">Admin</a></li>
+      <?php endif; ?>
     </ul>
   </nav>
 </header>
