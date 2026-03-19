@@ -1308,3 +1308,51 @@ white-space: nowrap;
   cursor: pointer;
   transform: translateY(2px);
 }
+
+.btn-delete {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-delete:hover {
+  background: #b91c1c;
+  transform: scale(1.1);
+}
+
+/* 🚫 retirer de la vente */
+.btn-disable {
+  background: #f59e0b;
+  color: black;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-disable:hover {
+  background: #d97706;
+}
+
+.btn-enable {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-enable:hover {
+  background: #16a34a;
+}
+

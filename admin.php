@@ -3,7 +3,7 @@ session_start();
 require_once 'db.php';
 
 // Vérifier si l'utilisateur est admin
-if (!isset($_SESSION['joueur_estAdmin']) || (int)$_SESSION['joueur_estAdmin'] !== 1) {
+if (!isset($_SESSION['joueur_estAdmin']) || (int) $_SESSION['joueur_estAdmin'] !== 1) {
     header('Location: index.php');
     exit;
 }
@@ -127,8 +127,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
+    $idItem = (int) $_POST['idItem'];
 
-// Rendre disponible pour la vente un item qui était retiré
+    if ($idItem > 0) {
+        try {
+            $pdo->beginTransaction();
+
+            // Supprimer dans tables liées (IMPORTANT)
+            $pdo->prepare("DELETE FROM Armes WHERE idItem = ?")->execute([$idItem]);
+            $pdo->prepare("DELETE FROM Armures WHERE idItem = ?")->execute([$idItem]);
+            $pdo->prepare("DELETE FROM Potions WHERE idItem = ?")->execute([$idItem]);
+            $pdo->prepare("DELETE FROM Sorts WHERE idItem = ?")->execute([$idItem]);
+
+            // Supprimer dans Items
+            $pdo->prepare("DELETE FROM Items WHERE idItem = ?")->execute([$idItem]);
+
+            $pdo->commit();
+            $message = "Item supprimé définitivement.";
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            $error = "Erreur suppression : " . $e->getMessage();
+        }
+    }
+}
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'enable_item') {
     $idItem = (int) $_POST['idItem'];
@@ -289,21 +313,30 @@ try {
                                 <td><?= $item['prix'] ?></td>
                                 <td>
                                     <?= $item['estDisponible'] == 1 ? 'Oui' : 'Non' ?>
-                                </td>
-                                <td>
+                                <td style="display:flex; gap:6px;">
+
+                                    <!-- ❌ SUPPRIMER -->
+                                    <form method="post" onsubmit="return confirm('Supprimer définitivement cet item ?');">
+                                        <input type="hidden" name="action" value="delete_item">
+                                        <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
+                                        <button type="submit" class="btn-delete">✖</button>
+                                    </form>
+
+                                    <!-- 🔁 DISPONIBILITÉ -->
                                     <?php if ($item['estDisponible'] == 1): ?>
                                         <form method="post">
                                             <input type="hidden" name="action" value="disable_item">
                                             <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
-                                            <button type="submit">Retirer de la vente</button>
+                                            <button type="submit" class="btn-disable">Retirer</button>
                                         </form>
                                     <?php else: ?>
                                         <form method="post">
                                             <input type="hidden" name="action" value="enable_item">
                                             <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
-                                            <button type="submit">Remettre en vente</button>
+                                            <button type="submit" class="btn-enable">Remettre</button>
                                         </form>
                                     <?php endif; ?>
+
                                 </td>
                             </tr>
                         <?php endforeach; ?>
