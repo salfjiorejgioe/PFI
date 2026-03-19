@@ -171,6 +171,7 @@ try {
 </head>
 
 <body>
+    <?php include_once 'template/head.php'; ?>
     <div class="admin-container">
 
         <div class="admin-card">
