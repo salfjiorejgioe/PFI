@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Alias et mot de passe sont obligatoires.";
     } else {
 
-        //  j'ai changé les noms de colonnes pour avoir les memes noms que dans la BD
         $stmt = $pdo->prepare("
             SELECT idJoueur,
                    alias,
@@ -28,24 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
 
         $stmt->execute([':alias' => $alias]);
-        $joueur = $stmt->fetch();
+        $joueur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // j'ai changé mpasee à motDePasse et j'ai gardé le password_verify pour comparer le mot de passe entré avec le hash stocké en BD
+        // Vérification du mot de passe avec password_verify
         if (!$joueur || !password_verify($password, $joueur['motDePasse'])) {
             $errors[] = "Alias ou mot de passe invalide.";
         } else {
-            $_SESSION['joueur_id']       = $joueur['idJoueur'];
-            $_SESSION['joueur_alias']    = $joueur['alias'];
+            // On normalise tout dans $_SESSION['user']
+            $_SESSION['user'] = [
+                'idJoueur' => (int)$joueur['idJoueur'],
+                'alias'    => $joueur['alias'],
 
-            // j'ai changé Montant en or à gold argent et bronze comme dans la bd
-            $_SESSION['joueur_or']       = (int)$joueur['gold'];
-            $_SESSION['joueur_argent']   = (int)$joueur['argent'];
-            $_SESSION['joueur_bronze']   = (int)$joueur['bronze'];
+                'or'      => (int)$joueur['gold'],
+                'argent'  => (int)$joueur['argent'],
+                'bronze'  => (int)$joueur['bronze'],
 
-            // j'ai  changé nom session pour correspondre à index.php
-            // j'en avais besoin pour le log in dans la page index.php pour afficher le nom du joueur et aussi pour vérifier si le joueur est mage ou pas pour afficher les items de magie
-            $_SESSION['joueur_estMage']  = (int)$joueur['estMage'];
-            $_SESSION['joueur_estAdmin'] = (int)$joueur['estAdmin'];
+                'estMage'  => (int)$joueur['estMage'],
+                'estAdmin' => (int)$joueur['estAdmin'],
+            ];
 
             header('Location: index.php');
             exit;
@@ -59,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Connexion - Darquest</title>
     <link rel="stylesheet" href="public/css/style.css">
-    <!-- Import Google Fonts for Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -67,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Connexion</h1>
 </header>
 
-<!-- Scoped wrapper: CSS ONLY applies within this main -->
 <main class="darquest-login auth-container">
     <?php if ($errors): ?>
         <div class="error">
