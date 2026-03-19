@@ -69,9 +69,9 @@ foreach ($items as $item) {
     <h3>Conversion de l'unité</h3>
     <table id="conversion-monnaie">
       <tr>
-        <td>1 Or = 10 Argent</td>
-        <td>1 Argent = 10 Bronze</td>
-        <td>1 Bronze = La Base</td>
+        <td>1 Or = La base</td>
+        <td>10 Argent = 1 Or</td>
+        <td>10 Bronze = 1 Argent</td>
       </tr>
     </table>
   </section>
