@@ -1,3 +1,12 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+
+$user = $_SESSION['user'] ?? null;
+?>
 <header>
   <div class="header-row">
     <div class="title-block">
@@ -8,12 +17,12 @@
     <div class="top-actions">
       <a id="cartBtn" class="icon-btn" href="#cart">🛒</a>
 
-      <?php if (isset($_SESSION['joueur_id'])): ?>
+      <?php if (!empty($user)): ?>
         <div class="user-info">
           <div class="user-info-top">
-            <span class="user-name">Bonjour, <?php echo h($_SESSION['joueur_alias']); ?></span>
+            <span class="user-name">Bonjour, <?php echo h($user['alias']); ?></span>
             <span class="user-role">
-              <?php echo !empty($_SESSION['joueur_estMage']) ? 'Est mage' : 'Pas mage'; ?>
+              <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>
             </span>
           </div>
 
@@ -21,19 +30,19 @@
             <div class="wallet-item gold">
               <span class="wallet-emoji">🪙</span>
               <span class="wallet-label">Gold</span>
-              <span class="wallet-value"><?php echo (int)$_SESSION['joueur_or']; ?></span>
+              <span class="wallet-value"><?php echo (int)$user['or']; ?></span>
             </div>
 
             <div class="wallet-item silver">
               <span class="wallet-emoji">🥈</span>
               <span class="wallet-label">Argent</span>
-              <span class="wallet-value"><?php echo (int)$_SESSION['joueur_argent']; ?></span>
+              <span class="wallet-value"><?php echo (int)$user['argent']; ?></span>
             </div>
 
             <div class="wallet-item bronze">
               <span class="wallet-emoji">🥉</span>
               <span class="wallet-label">Bronze</span>
-              <span class="wallet-value"><?php echo (int)$_SESSION['joueur_bronze']; ?></span>
+              <span class="wallet-value"><?php echo (int)$user['bronze']; ?></span>
             </div>
           </div>
         </div>
@@ -49,12 +58,12 @@
   <nav>
     <ul>
       <li><a href="index.php">Accueil</a></li>
-      <li><a href="#">Inventaire</a></li>
+      <li><a href="inventaire.php">Inventaire</a></li>
       <li><a href="#">Vendre</a></li>
       <li><a href="#">Enigma</a></li>
       <li><a href="#">Profil</a></li>
-      <?php if (!empty($_SESSION['joueur_estAdmin']) && (int)$_SESSION['joueur_estAdmin'] === 1): ?>
-      <li><a href="admin.php">Admin</a></li>
+      <?php if (!empty($user) && !empty($user['estAdmin']) && (int)$user['estAdmin'] === 1): ?>
+        <li><a href="admin.php">Admin</a></li>
       <?php endif; ?>
     </ul>
   </nav>
