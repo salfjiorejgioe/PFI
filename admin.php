@@ -3,11 +3,10 @@ session_start();
 require_once 'db.php';
 
 // Vérifier si l'utilisateur est admin
-if (!isset($_SESSION['user']) || $_SESSION['user']['estAdmin'] != 1) {
+if (!isset($_SESSION['joueur_estAdmin']) || (int)$_SESSION['joueur_estAdmin'] !== 1) {
     header('Location: index.php');
     exit;
 }
-
 $message = "";
 $error = "";
 
