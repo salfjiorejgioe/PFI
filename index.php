@@ -37,11 +37,7 @@ foreach ($items as $item) {
     }
 }
 
-// Confirmation achat panier
-// if ($_SERVER['REQUEST_METHOD'] == "POST"){
-//   acheter_objets()
 
-// }
 
 
 
@@ -95,6 +91,7 @@ foreach ($items as $item) {
             <h3><?php echo h($item['nom']); ?></h3>
             <p>Prix : <?php echo (int)$item['prix']; ?></p>
             <p>Stock : <?php echo (int)$item['quantiteStock']; ?></p>
+            <button class="btn-add" data-item-id="<?php echo (int)$item['idItem']; ?>">Ajouter au panier</button>
           </a>
         <?php endforeach; ?>
       </div>
@@ -120,6 +117,7 @@ foreach ($items as $item) {
             <h3><?php echo h($item['nom']); ?></h3>
             <p>Prix : <?php echo (int)$item['prix']; ?></p>
             <p>Stock : <?php echo (int)$item['quantiteStock']; ?></p>
+            <button class="btn-add" data-item-id="<?php echo (int)$item['idItem']; ?>">Ajouter au panier</button>
           </a>
         <?php endforeach; ?>
       </div>
@@ -145,6 +143,7 @@ foreach ($items as $item) {
             <h3><?php echo h($item['nom']); ?></h3>
             <p>Prix : <?php echo (int)$item['prix']; ?></p>
             <p>Stock : <?php echo (int)$item['quantiteStock']; ?></p>
+            <button class="btn-add" data-item-id="<?php echo (int)$item['idItem']; ?>">Ajouter au panier</button>
           </a>
         <?php endforeach; ?>
       </div>
@@ -170,6 +169,7 @@ foreach ($items as $item) {
             <h3><?php echo h($item['nom']); ?></h3>
             <p>Prix : <?php echo (int)$item['prix']; ?></p>
             <p>Stock : <?php echo (int)$item['quantiteStock']; ?></p>
+            <button class="btn-add" data-item-id="<?php echo (int)$item['idItem']; ?>">Ajouter au panier</button>
           </a>
         <?php endforeach; ?>
       </div>
