@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    gold,
                    argent,
                    bronze,
-                   estMage
+                   estMage,
+                   estAdmin
             FROM Joueurs
             WHERE alias = :alias
             LIMIT 1
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // j'ai  changé nom session pour correspondre à index.php
             // j'en avais besoin pour le log in dans la page index.php pour afficher le nom du joueur et aussi pour vérifier si le joueur est mage ou pas pour afficher les items de magie
             $_SESSION['joueur_estMage']  = (int)$joueur['estMage'];
+            $_SESSION['joueur_estAdmin'] = (int)$joueur['estAdmin'];
 
             header('Location: index.php');
             exit;
