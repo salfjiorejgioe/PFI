@@ -3,7 +3,7 @@ session_start();
 require_once 'db.php';
 
 // Vérifier si l'utilisateur est admin
-if (!isset($_SESSION['joueur_estAdmin']) || (int) $_SESSION['joueur_estAdmin'] !== 1) {
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['estAdmin']) || (int)$_SESSION['user']['estAdmin'] !== 1) {
     header('Location: index.php');
     exit;
 }
@@ -195,7 +195,7 @@ try {
 </head>
 
 <body>
-    <?php include_once 'template/head.php'; ?>
+    <?php include_once 'template/header.php'; ?>
     <div class="admin-container">
 
         <div class="admin-card">
