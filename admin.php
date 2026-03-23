@@ -262,6 +262,8 @@ try {
                         <option value="N">N - Nature</option>
                         <option value="G">G - Givre</option>
                         <option value="I">I - Invocation</option>
+                        <option value="H">H - Heal</option>
+                        <option value="C">C - Chaos</option>
                     </select>
 
                     <select name="sort_estInstantane">
