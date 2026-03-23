@@ -179,6 +179,7 @@ foreach ($items as $item) {
     </section>
 
   </main>
+   <?php include_once 'template/footer.php'; ?>
 
   <aside id="cart">
     <div class="cart-head">
