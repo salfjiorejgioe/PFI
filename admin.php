@@ -270,7 +270,7 @@ try {
                         <option value="0">Non</option>
                     </select>
 
-                    <input type="number" name="sort_retirePV" placeholder="PV retirés" min="0">
+                    <input type="number" name="sort_retirePV" placeholder="PV retirés">
                 </div>
 
                 <button type="submit">Ajouter l'item</button>
