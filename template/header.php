@@ -10,7 +10,7 @@ $user = $_SESSION['user'] ?? null;
 <header>
   <div class="header-row">
     <div class="title-block">
-      <h1>Marché Darquest</h1>
+      <h1>⚔️ Marché Darquest</h1>
       <h2>Notre bibliothèque des objets magiques et puissants</h2>
     </div>
 
