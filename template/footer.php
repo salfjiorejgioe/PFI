@@ -1,7 +1,8 @@
-<footer class="simple-footer">
+<footer>
 
   <style>
-    .simple-footer {
+    /* ===== FOOTER SUIVEUR (COMME simple-footer) ===== */
+    .footer-follow {
       position: fixed;
       bottom: 0;
       left: 0;
@@ -19,26 +20,25 @@
 
       font-size: 13px;
       color: #9ca3af;
-      z-index: 100;
+      z-index: 200;
     }
 
-    .footer-container {
+    .footer-follow-container {
       width: 100%;
       max-width: 1200px;
 
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
     }
 
-    /* gauche */
-    .footer-left {
+    .footer-follow-left {
       color: #9ca3af;
       font-style: italic;
     }
 
-    /* centre */
-    .footer-center {
+    .footer-follow-center {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
@@ -46,13 +46,12 @@
       letter-spacing: 0.5px;
     }
 
-    /* droite */
-    .footer-right {
+    .footer-follow-right {
       display: flex;
       gap: 8px;
     }
 
-    .footer-right a {
+    .footer-follow-right a {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       padding: 5px 10px;
@@ -63,34 +62,101 @@
       transition: 0.2s;
     }
 
-    .footer-right a:hover {
+    .footer-follow-right a:hover {
       background: rgba(167,139,250,0.2);
       border-color: rgba(167,139,250,0.4);
       color: #c4b5fd;
     }
+
+    /* ===== FOOTER DE PAGE (AVEC ÉQUIPE) ===== */
+    .site-footer-main {
+      background: rgba(5, 8, 15, 0.9);
+      color: #9ca3af;
+      font-size: 13px;
+      margin-top: 40px;
+      padding: 16px 20px 60px;
+    }
+
+    .footer-main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-main-left {
+      color: #9ca3af;
+    }
+
+    .footer-logo {
+      font-weight: 600;
+      color: #a78bfa;
+    }
+
+    .footer-tagline {
+      margin: 0;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .footer-team-title {
+      margin: 0 0 4px;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .footer-team-names {
+      margin: 0;
+      font-size: 12px;
+    }
   </style>
 
-  <div class="footer-container">
+  <!-- FOOTER DE PAGE (AVEC ÉQUIPE) -->
+  <div class="site-footer-main">
+    <div class="footer-main-container">
 
-    <!-- gauche -->
-    <div class="footer-left">
-      ✨ Bon magasinage
+      <!-- Projet -->
+      <div class="footer-main-left">
+        <span class="footer-logo">⚔️ Marché Darquest</span>
+        <p class="footer-tagline">Projet scolaire — Gestion de marché médiéval fantastique</p>
+      </div>
+
+      <!-- Équipe -->
+      <div class="footer-main-team">
+        <p class="footer-team-title">Équipe</p>
+        <p class="footer-team-names">
+          DJOUDAD Massine · Jason Abboud · Salah Mehdi · Loïc Beaupré
+        </p>
+      </div>
+
     </div>
+  </div>
 
-    <!-- centre -->
-    <div class="footer-center">
-      ⚔️ Marché Darquest ©
+  <!-- FOOTER SUIVEUR (COMME simple-footer) -->
+  <div class="footer-follow">
+    <div class="footer-follow-container">
+
+      <!-- gauche -->
+      <div class="footer-follow-left">
+        ✨ Bon magasinage
+      </div>
+
+      <!-- centre -->
+      <div class="footer-follow-center">
+        ⚔️ Marché Darquest ©
+      </div>
+
+      <!-- droite -->
+      <div class="footer-follow-right">
+        <a href="contact.php">Contact</a>
+        <?php if (isset($_SESSION['user'])): ?>
+          <a href="logout.php">Déconnexion</a>
+        <?php endif; ?>
+      </div>
+
     </div>
-
-    <!-- droite -->
-    <div class="footer-right">
-      <a href="contact.php">Contact</a>
-
-      <?php if (isset($_SESSION['user'])): ?>
-        <a href="logout.php">Déconnexion</a>
-      <?php endif; ?>
-    </div>
-
   </div>
 
 </footer>
