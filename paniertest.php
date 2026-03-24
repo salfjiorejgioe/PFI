@@ -13,9 +13,11 @@ include 'panier.php'?>
         <title>paniertest.</title>
     </head>
     <body>
-        <div class="cart-head">
-      <h4>Panier</h4>
-      <div id="cart-total"></div>
+        <?php include_once 'template/header.php' ?>
+        <main>
+            <div class="cart-head">
+            <h4>Panier</h4>
+            <div id="cart-total"></div>
       <form method="post">
         <input type="submit" name="action" value="Acheter">
         <input type="submit" value="Acheter">
@@ -26,5 +28,8 @@ include 'panier.php'?>
       <?php include "panier.php"; ?>
       <p>Le Panier est Vide</p>
     </div>
+
+        </main>
+        
     </body>
 </html>

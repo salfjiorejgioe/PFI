@@ -1,6 +1,7 @@
 <?php
 require_once 'db.php';
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($_POST['action'] == 'Ajouter') {
         ajouter_objet_panier($pdo, $_POST['idItem']);
@@ -16,13 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-if (isset($_SESSION['joueur_id'])) {
-        $joueur_id = $_SESSION['joueur_id'];
-        $joueur_alias = $_SESSION['joueur_alias'] ;
-        $joueur_or = $_SESSION['joueur_or'];
-        $joueur_argent = $_SESSION['joueur_argent'];
-        $joueur_bronze = $_SESSION['joueur_bronze'];
-        $joueur_est_mage = $_SESSION['joueur_estMage'];
+if (isset($_SESSION['user']['idJoueur'])) {
+        $joueur_id = $_SESSION['user']['idJoueur'];
+        $joueur_alias = $_SESSION['user']['alias'] ;
+        $joueur_or = $_SESSION['user']['or'];
+        $joueur_argent = $_SESSION['user']['argent'];
+        $joueur_bronze = $_SESSION['user']['bronze'];
+        $joueur_est_mage = $_SESSION['user']['estMage'];
 
 }
 
@@ -59,7 +60,7 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
             FROM Paniers
             WHERE idJoueur = ?";
 
-    $idJoueur = $_SESSION['joueur_id'];
+    $idJoueur = $_SESSION['user']['idJoueur'];
 
     try {
         $stmt = $pdo->prepare($sql);
@@ -72,10 +73,10 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
     }
 }
 function ajouter_objet_Panier($pdo, $idItem){ // ajoute +1 objet au panier selon l'id de l'item
-    if (!isset($_SESSION["joueur_id"])) {
+    if (!isset($_SESSION['user']["idJoueur"])) {
         return false; // sécurité
     }
-    $joueur_id = $_SESSION['joueur_id'];
+    $joueur_id = $_SESSION['user']['idJoueur'];
 
     
     $info_item = obtenirArticle($pdo, $idItem);
@@ -120,10 +121,10 @@ function ajouter_objet_Panier($pdo, $idItem){ // ajoute +1 objet au panier selon
     }
 }
 function retirer_objet_Panier($pdo, $idItem){ // retire -1 objet au panier selon l'id de l'item
-    if (!isset($_SESSION["joueur_id"])) {
+    if (!isset($_SESSION['user']["idJoueur"])) {
         return false; // sécurité
     }
-    $joueur_id = $_SESSION['joueur_id'];
+    $joueur_id = $_SESSION['user']['idJoueur'];
 
     
     $sql = "SELECT quantitePanier
@@ -167,7 +168,7 @@ function retirer_objet_Panier($pdo, $idItem){ // retire -1 objet au panier selon
 function acheter_panier($pdo){ // don't mind this one for now ///////////////////////// buy items
     $liste_items = obtenirArticlesPanier($pdo);
     $prixTotalOr = 0;
-    $idJoueur = $_SESSION['joueur_id'];
+    $idJoueur = $_SESSION['user']['idJoueur'];
     foreach ($liste_items as $item){ // ajouter idItem et quantité a inventaire. Si item existe deja, ajouter quantité. Prof fournit un curseur pour maj l'inventaire
         $idItem = $item['idItem'];
         $quantite = $item["quantitePanier"];

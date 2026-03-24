@@ -184,7 +184,6 @@ foreach ($items as $item) {
 <aside id="cart">
   <div class="cart-head">
     <h4>Panier</h4>
-   
 
     <div class="cart-head-actions">
       <button type="button" id="btn-clear-cart">Vider</button>
