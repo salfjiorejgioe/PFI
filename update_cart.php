@@ -1,133 +1,118 @@
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const barreRecherche = document.getElementById('barreRecherche');
-  const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
-  const sections = document.querySelectorAll('.section-items');
+<?php
+session_start();
+require_once 'db.php';
 
-  const cartItems = document.getElementById('cart-items');
-  const cartTotal = document.getElementById('cart-total');
+header('Content-Type: application/json');
 
-  function appliquerFiltres() {
-    const recherche = barreRecherche.value.toLowerCase().trim();
-    const typesSelectionnes = [];
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Vous devez être connecté.'
+    ]);
+    exit;
+}
 
-    checkboxes.forEach(function (checkbox) {
-      if (checkbox.checked) {
-        const texteLabel = checkbox.parentElement.textContent.trim().toLowerCase();
-        typesSelectionnes.push(texteLabel);
-      }
-    });
+$idJoueur = (int)$_SESSION['user']['idJoueur'];
+$action = $_POST['action'] ?? '';
+$idItem = isset($_POST['idItem']) ? (int)$_POST['idItem'] : 0;
 
-    sections.forEach(function (section) {
-      const typeSection = section.querySelector('h2').textContent.trim().toLowerCase();
-      const cartes = section.querySelectorAll('.item-card');
-      let auMoinsUneVisible = false;
-
-      cartes.forEach(function (carte) {
-        const nomItem = carte.querySelector('h3').textContent.toLowerCase();
-        const matchRecherche = nomItem.includes(recherche);
-        const matchType = typesSelectionnes.length === 0 || typesSelectionnes.includes(typeSection);
-
-        if (matchRecherche && matchType) {
-          carte.style.display = '';
-          auMoinsUneVisible = true;
-        } else {
-          carte.style.display = 'none';
-        }
-      });
-
-      section.style.display = auMoinsUneVisible ? '' : 'none';
-    });
-  }
-
-  function afficherPanierDepuisJson(items, total) {
-    cartItems.innerHTML = '';
-
-    if (!items || items.length === 0) {
-      cartItems.innerHTML = '<p>Le Panier est Vide</p>';
-      cartTotal.textContent = 'Total : 0';
-      return;
+try {
+    if ($action === 'clear') {
+        $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ?");
+        $stmt->execute([$idJoueur]);
     }
 
-    items.forEach(function (item) {
-      const div = document.createElement('div');
-      div.className = 'cart-item';
+    elseif ($action === 'remove' && $idItem > 0) {
+        $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ? AND idItem = ?");
+        $stmt->execute([$idJoueur, $idItem]);
+    }
 
-      div.innerHTML = `
-        <strong>${item.nom}</strong><br>
-        Prix : ${item.prix}<br>
-        Quantité : ${item.quantitePanier}<br>
-        Sous-total : ${item.sousTotal}
-        <hr>
-      `;
+    elseif ($action === 'increase' && $idItem > 0) {
+        // stock actuel
+        $stmt = $pdo->prepare("
+            SELECT p.quantitePanier, i.quantiteStock
+            FROM Paniers p
+            INNER JOIN Items i ON p.idItem = i.idItem
+            WHERE p.idJoueur = ? AND p.idItem = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idJoueur, $idItem]);
+        $ligne = $stmt->fetch(PDO::FETCH_ASSOC);
 
-      cartItems.appendChild(div);
-    });
+        if ($ligne) {
+            $nouvelleQuantite = (int)$ligne['quantitePanier'] + 1;
 
-    cartTotal.textContent = 'Total : ' + total;
-  }
-
-  function chargerPanier() {
-    fetch('load_cart.php')
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          afficherPanierDepuisJson(data.items, data.total);
-        } else {
-          cartItems.innerHTML = '<p>Connectez-vous pour utiliser le panier.</p>';
-          cartTotal.textContent = 'Total : 0';
+            if ($nouvelleQuantite <= (int)$ligne['quantiteStock']) {
+                $stmt = $pdo->prepare("
+                    UPDATE Paniers
+                    SET quantitePanier = ?
+                    WHERE idJoueur = ? AND idItem = ?
+                ");
+                $stmt->execute([$nouvelleQuantite, $idJoueur, $idItem]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Stock maximal atteint.'
+                ]);
+                exit;
+            }
         }
-      })
-      .catch(() => {
-        cartItems.innerHTML = '<p>Erreur lors du chargement du panier.</p>';
-        cartTotal.textContent = 'Total : 0';
-      });
-  }
+    }
 
-  barreRecherche.addEventListener('input', appliquerFiltres);
+    elseif ($action === 'decrease' && $idItem > 0) {
+        $stmt = $pdo->prepare("
+            SELECT quantitePanier
+            FROM Paniers
+            WHERE idJoueur = ? AND idItem = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$idJoueur, $idItem]);
+        $ligne = $stmt->fetch(PDO::FETCH_ASSOC);
 
-  checkboxes.forEach(function (checkbox) {
-    checkbox.addEventListener('change', appliquerFiltres);
-  });
+        if ($ligne) {
+            $nouvelleQuantite = (int)$ligne['quantitePanier'] - 1;
 
-  document.querySelectorAll('.btn-add').forEach(function (btn) {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const idItem = this.dataset.itemId;
-
-      fetch('add_to_cart.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'idItem=' + encodeURIComponent(idItem)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.success) {
-          alert(data.message);
-          return;
+            if ($nouvelleQuantite <= 0) {
+                $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ? AND idItem = ?");
+                $stmt->execute([$idJoueur, $idItem]);
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE Paniers
+                    SET quantitePanier = ?
+                    WHERE idJoueur = ? AND idItem = ?
+                ");
+                $stmt->execute([$nouvelleQuantite, $idJoueur, $idItem]);
+            }
         }
+    }
 
-        afficherPanierDepuisJson(data.items, data.total);
+    // recharger le panier
+    $stmt = $pdo->prepare("
+        SELECT p.idItem, p.quantitePanier, i.nom, i.prix, i.photo
+        FROM Paniers p
+        INNER JOIN Items i ON p.idItem = i.idItem
+        WHERE p.idJoueur = ?
+        ORDER BY i.nom
+    ");
+    $stmt->execute([$idJoueur]);
+    $itemsPanier = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        this.textContent = 'Ajouté !';
-        this.style.background = '#adadad';
+    $total = 0;
+    foreach ($itemsPanier as &$ligne) {
+        $ligne['prix'] = (int)$ligne['prix'];
+        $ligne['quantitePanier'] = (int)$ligne['quantitePanier'];
+        $ligne['sousTotal'] = $ligne['prix'] * $ligne['quantitePanier'];
+        $total += $ligne['sousTotal'];
+    }
 
-        setTimeout(() => {
-          this.textContent = 'Ajouter au panier';
-          this.style.background = '';
-        }, 1000);
-      })
-      .catch(() => {
-        alert('Erreur lors de l’ajout au panier.');
-      });
-    });
-  });
-
-  appliquerFiltres();
-  chargerPanier();
-});
-</script>
+    echo json_encode([
+        'success' => true,
+        'items' => $itemsPanier,
+        'total' => $total
+    ]);
+} catch (PDOException $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Erreur SQL : ' . $e->getMessage()
+    ]);
+}
