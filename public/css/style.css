@@ -1540,12 +1540,12 @@ img.item-thumb {
 
 
 .btn-cart-plus {
-  background: #22c55e;
+  background: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
 .btn-cart-plus:hover {
-  background: #16a34a;
+ background: rgba(255, 255, 255, 0.2);
 }
 
 .btn-cart-remove {

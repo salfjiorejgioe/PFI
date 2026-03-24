@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $estInstantane = $_POST['sort_estInstantane'];
                 $retirePV = (int) $_POST['sort_retirePV'];
 
-                $sqlSort = "INSERT INTO Sorts (idItem, estInstantane, retirePV, typeSort)
+                $sqlSort = "INSERT INTO Sorts (idItem, estInstantane, rarete, typeSort)
                             VALUES (?, ?, ?, ?)";
                 $stmtSort = $pdo->prepare($sqlSort);
                 $stmtSort->execute([$idItem, $estInstantane, $retirePV, $typeSort]);
@@ -264,6 +264,8 @@ try {
                         <option value="I">I - Invocation</option>
                         <option value="H">H - Heal</option>
                         <option value="C">C - Chaos</option>
+                        <option value="T">T - Teleport</option>
+                        <option value="W">W - Water</option>
                     </select>
 
                     <select name="sort_estInstantane">
@@ -272,7 +274,7 @@ try {
                         <option value="0">Non</option>
                     </select>
 
-                    <input type="number" name="sort_retirePV" placeholder="PV retirés">
+                    <input type="number" name="sort_retirePV" placeholder="Rareté" min="1" max="10">
                 </div>
 
                 <button type="submit">Ajouter l'item</button>
