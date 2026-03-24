@@ -50,7 +50,7 @@ foreach ($items as $item) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="public/css/style.css">
-  <title>⚔️ Marché Darquest</title>
+  <title> Marché Darquest</title>
 </head>
 
 <body>
@@ -93,11 +93,7 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <form method="post" action="panier.php">
-                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
-                <input type="submit" name="action" value="Ajouter" class="btn-add">
-              </form>
-          
+              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
             </a>
           <?php endforeach; ?>
         </div>
@@ -123,10 +119,7 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <form method="post" action="panier.php">
-                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
-                <input type="submit" name="action" value="Ajouter" class="btn-add">
-              </form>
+              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
             </a>
           <?php endforeach; ?>
         </div>
@@ -152,10 +145,7 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <form method="post" action="panier.php">
-                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
-                <input type="submit" name="action" value="Ajouter" class="btn-add">
-              </form>
+              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
             </a>
           <?php endforeach; ?>
         </div>
@@ -181,15 +171,7 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-
-
-             
-
-              <form method="post" action="panier.php">
-                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
-                <input type="submit" name="action" value="Ajouter" class="btn-add">
-              </form>
-
+              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
             </a>
           <?php endforeach; ?>
         </div>
@@ -202,13 +184,12 @@ foreach ($items as $item) {
   <aside id="cart">
     <div class="cart-head">
       <h4>Panier</h4>
-      <div id="cart-total"></div>
       <form method="post">
-        <input type="submit" name="action" value="Acheter">
         <input type="submit" value="Acheter">
       </form>
       <a class="cart-close" href="#">✕</a>
     </div>
+
     <div class="cart-items">
       <?php include "panier.php"; ?>
       <p>Le Panier est Vide</p>
@@ -217,138 +198,124 @@ foreach ($items as $item) {
 
 </body>
 <script>
-  
+document.addEventListener('DOMContentLoaded', function () {
+  const barreRecherche = document.getElementById('barreRecherche');
+  const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
+  const sections = document.querySelectorAll('.section-items');
 
-  document.addEventListener('DOMContentLoaded', function () {
-    let panier = {};
-    const barreRecherche = document.getElementById('barreRecherche');
-    const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
-    const sections = document.querySelectorAll('.section-items');
-    const cartContainer = document.getElementById('.cart-items');
-    const cartTotal = document.getElementById('cart-total');
+  const cartItems = document.getElementById('cart-items');
+  const cartTotal = document.getElementById('cart-total');
 
-    function refreshCart(){
-      cartContainer.innerHTML = '';
-      let total = 0;
-      let estVide = true;
-      for(let i in panier){
-        const item = panier[id];
-        estVide = false;
-        const div = document.createElement('div');
-        div.classList.add('cart-item');
-        div.innerHTML = `<strong>${item.nomItem}</strong><br>
-                          ${item.prix} x ${item.quantite} = ${item.prix * item.quantite}
-                        `;
-        cartContainer.appendChild(div);
-        total += item.prix * item.quantite;
-      }
-      if(estVide){
-        cartContainer.innerHTML = "<p>Le panier est vide.</p>"
-      }
-      cartTotal.innerHTML = total;
-    }
-    document.querySelectorAll('.btn-add').forEach(function(btn){
-      btn.addEventListener('click', function(e){
-        e.preventDefault();
-        e.stopPropagation();
+  let panier = {};
 
+  function appliquerFiltres() {
+    const recherche = barreRecherche.value.toLowerCase().trim();
+    const typesSelectionnes = [];
 
-        const cardPanier = this.closest('.item-card');
-        const id = this.dataset.idItem;
-        const nom = cardPanier.querySelector('h3').textContent;
-        const prix = parseInt(cardPanier.querySelector('p').textContent);
-
-        if(panier[id]){
-          panier[id].quantite++;
-
-        }
-        else{
-          panier[id] = {
-                id:id,
-                nom:nom,
-                prix:prix,
-                quantite:1};
-        }
-        refreshCart();
-        this.textContent = "item a été ajouté";
-
-
-      })
-    })
-
-    function appliquerFiltres() {
-      const recherche = barreRecherche.value.toLowerCase().trim();
-
-      // Types cochés
-      const typesSelectionnes = [];
-      checkboxes.forEach(function (checkbox) {
-        if (checkbox.checked) {
-          const texteLabel = checkbox.parentElement.textContent.trim().toLowerCase();
-          typesSelectionnes.push(texteLabel);
-        }
-      });
-
-      sections.forEach(function (section) {
-        const typeSection = section.querySelector('h2').textContent.trim().toLowerCase();
-        const cartes = section.querySelectorAll('.item-card');
-        let auMoinsUneVisible = false;
-
-        cartes.forEach(function (carte) {
-          const nomItem = carte.querySelector('h3').textContent.toLowerCase();
-
-          const matchRecherche = nomItem.includes(recherche);
-
-          // Si aucune checkbox cochée, on accepte tous les types
-          const matchType = typesSelectionnes.length === 0 || typesSelectionnes.includes(typeSection);
-
-          if (matchRecherche && matchType) {
-            carte.style.display = '';
-            auMoinsUneVisible = true;
-          } else {
-            carte.style.display = 'none';
-          }
-        });
-
-        // Cacher la section complète s'il n'y a aucun item visible
-        if (auMoinsUneVisible) {
-          section.style.display = '';
-        } else {
-          section.style.display = 'none';
-        }
-      });
-    }
-
-    // Recherche en direct
-    barreRecherche.addEventListener('input', appliquerFiltres);
-
-    // Filtres checkbox
     checkboxes.forEach(function (checkbox) {
-      checkbox.addEventListener('change', appliquerFiltres);
+      if (checkbox.checked) {
+        const texteLabel = checkbox.parentElement.textContent.trim().toLowerCase();
+        typesSelectionnes.push(texteLabel);
+      }
     });
 
-    document.querySelectorAll('.btn-add').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault(); // Empêche le comportement par défaut du bouton details.php
-        e.stopPropagation(); // Empêche le clic de déclencher le lien parent
+    sections.forEach(function (section) {
+      const typeSection = section.querySelector('h2').textContent.trim().toLowerCase();
+      const cartes = section.querySelectorAll('.item-card');
+      let auMoinsUneVisible = false;
 
-        const idItem = this.dataset.id; // Récupère l'id de l'item à ajouter
+      cartes.forEach(function (carte) {
+        const nomItem = carte.querySelector('h3').textContent.toLowerCase();
+        const matchRecherche = nomItem.includes(recherche);
+        const matchType = typesSelectionnes.length === 0 || typesSelectionnes.includes(typeSection);
 
-        console.log("Ajout item :", idItem);  // Affiche dans la console pour vérifier que l'id est correct
-
-        
-
-        this.textContent = "Ajouté !";
-        this.style.background = "#adadad";
-
-        setTimeout(() => {
-          this.textContent = "Ajouter au panier";
-          this.style.background = "";
-        }, 1000);
+        if (matchRecherche && matchType) {
+          carte.style.display = '';
+          auMoinsUneVisible = true;
+        } else {
+          carte.style.display = 'none';
+        }
       });
-    });
 
-    appliquerFiltres();
+      section.style.display = auMoinsUneVisible ? '' : 'none';
+    });
+  }
+
+  function afficherPanier() {
+    cartItems.innerHTML = '';
+    let total = 0;
+    let panierVide = true;
+
+    for (const id in panier) {
+      panierVide = false;
+      const item = panier[id];
+      const sousTotal = item.prix * item.quantite;
+      total += sousTotal;
+
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <strong>${item.nom}</strong><br>
+        Prix : ${item.prix}<br>
+        Quantité : ${item.quantite}<br>
+        Sous-total : ${sousTotal}
+        <hr>
+      `;
+      cartItems.appendChild(div);
+    }
+
+    if (panierVide) {
+      cartItems.innerHTML = '<p>Le Panier est Vide</p>';
+    }
+
+    cartTotal.textContent = 'Total : ' + total;
+  }
+
+  barreRecherche.addEventListener('input', appliquerFiltres);
+
+  checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', appliquerFiltres);
   });
+
+  document.querySelectorAll('.btn-add').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const card = this.closest('.item-card');
+      const idItem = this.dataset.itemId;
+      const nomItem = card.querySelector('h3').textContent.trim();
+
+      const paragraphes = card.querySelectorAll('p');
+      const prixTexte = paragraphes[0].textContent;
+      const prixItem = parseInt(prixTexte.replace(/\D/g, ''), 10);
+
+      if (!panier[idItem]) {
+        panier[idItem] = {
+          id: idItem,
+          nom: nomItem,
+          prix: prixItem,
+          quantite: 1
+        };
+      } else {
+        panier[idItem].quantite++;
+      }
+
+      afficherPanier();
+
+      this.textContent = 'Ajouté !';
+      this.style.background = '#adadad';
+
+      setTimeout(() => {
+        this.textContent = 'Ajouter au panier';
+        this.style.background = '';
+      }, 1000);
+    });
+  });
+
+  appliquerFiltres();
+  afficherPanier();
+});
 </script>
 
 </html>
