@@ -181,20 +181,23 @@ foreach ($items as $item) {
   </main>
    <?php include_once 'template/footer.php'; ?>
 
-  <aside id="cart">
-    <div class="cart-head">
-      <h4>Panier</h4>
-      <form method="post">
-        <input type="submit" value="Acheter">
-      </form>
-      <a class="cart-close" href="#">✕</a>
-    </div>
+<aside id="cart">
+  <div class="cart-head">
+    <h4>Panier</h4>
+    <form action="panier.php" method="get">
+      <input type="submit" value="Acheter">
+    </form>
+    <a class="cart-close" href="#">✕</a>
+  </div>
 
-    <div class="cart-items">
-      <?php include "panier.php"; ?>
-      <p>Le Panier est Vide</p>
-    </div>
-  </aside>
+  <div class="cart-items" id="cart-items">
+    <p>Le Panier est Vide</p>
+  </div>
+
+  <div class="cart-total" id="cart-total">
+    Total : 0
+  </div>
+</aside>
 
 </body>
 <script>
@@ -205,8 +208,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const cartItems = document.getElementById('cart-items');
   const cartTotal = document.getElementById('cart-total');
-
-  let panier = {};
 
   function appliquerFiltres() {
     const recherche = barreRecherche.value.toLowerCase().trim();
@@ -241,34 +242,48 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function afficherPanier() {
+  function afficherPanierDepuisJson(items, total) {
     cartItems.innerHTML = '';
-    let total = 0;
-    let panierVide = true;
 
-    for (const id in panier) {
-      panierVide = false;
-      const item = panier[id];
-      const sousTotal = item.prix * item.quantite;
-      total += sousTotal;
+    if (!items || items.length === 0) {
+      cartItems.innerHTML = '<p>Le Panier est Vide</p>';
+      cartTotal.textContent = 'Total : 0';
+      return;
+    }
 
+    items.forEach(function (item) {
       const div = document.createElement('div');
       div.className = 'cart-item';
+
       div.innerHTML = `
         <strong>${item.nom}</strong><br>
         Prix : ${item.prix}<br>
-        Quantité : ${item.quantite}<br>
-        Sous-total : ${sousTotal}
+        Quantité : ${item.quantitePanier}<br>
+        Sous-total : ${item.sousTotal}
         <hr>
       `;
-      cartItems.appendChild(div);
-    }
 
-    if (panierVide) {
-      cartItems.innerHTML = '<p>Le Panier est Vide</p>';
-    }
+      cartItems.appendChild(div);
+    });
 
     cartTotal.textContent = 'Total : ' + total;
+  }
+
+  function chargerPanier() {
+    fetch('load_cart.php')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          afficherPanierDepuisJson(data.items, data.total);
+        } else {
+          cartItems.innerHTML = '<p>Connectez-vous pour utiliser le panier.</p>';
+          cartTotal.textContent = 'Total : 0';
+        }
+      })
+      .catch(() => {
+        cartItems.innerHTML = '<p>Erreur lors du chargement du panier.</p>';
+        cartTotal.textContent = 'Total : 0';
+      });
   }
 
   barreRecherche.addEventListener('input', appliquerFiltres);
@@ -282,39 +297,40 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       e.stopPropagation();
 
-      const card = this.closest('.item-card');
       const idItem = this.dataset.itemId;
-      const nomItem = card.querySelector('h3').textContent.trim();
 
-      const paragraphes = card.querySelectorAll('p');
-      const prixTexte = paragraphes[0].textContent;
-      const prixItem = parseInt(prixTexte.replace(/\D/g, ''), 10);
+      fetch('add_to_cart.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'idItem=' + encodeURIComponent(idItem)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          alert(data.message);
+          return;
+        }
 
-      if (!panier[idItem]) {
-        panier[idItem] = {
-          id: idItem,
-          nom: nomItem,
-          prix: prixItem,
-          quantite: 1
-        };
-      } else {
-        panier[idItem].quantite++;
-      }
+        afficherPanierDepuisJson(data.items, data.total);
 
-      afficherPanier();
+        this.textContent = 'Ajouté !';
+        this.style.background = '#adadad';
 
-      this.textContent = 'Ajouté !';
-      this.style.background = '#adadad';
-
-      setTimeout(() => {
-        this.textContent = 'Ajouter au panier';
-        this.style.background = '';
-      }, 1000);
+        setTimeout(() => {
+          this.textContent = 'Ajouter au panier';
+          this.style.background = '';
+        }, 1000);
+      })
+      .catch(() => {
+        alert('Erreur lors de l’ajout au panier.');
+      });
     });
   });
 
   appliquerFiltres();
-  afficherPanier();
+  chargerPanier();
 });
 </script>
 
