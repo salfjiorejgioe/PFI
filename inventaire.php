@@ -29,7 +29,7 @@ try {
                it.photo,
                it.typeItem,
                inv.quantiteInventaire
-        FROM Inventaire inv
+        FROM Inventaires inv
         INNER JOIN Items it ON inv.idItem = it.idItem
         WHERE inv.idJoueur = :idJoueur
         ORDER BY it.typeItem, it.nom
@@ -74,11 +74,12 @@ foreach ($itemsInventaire as $item) {
 <main>
   <section id="filtres">
     <h1>Mon inventaire</h1>
-    <input type="text" placeholder="Rechercher...">
-    <label><input type="checkbox"> Potions</label>
-    <label><input type="checkbox"> Armures</label>
-    <label><input type="checkbox"> Armes</label>
-    <label><input type="checkbox"> Sorts</label>
+    <!-- même id et mêmes values que dans index.php -->
+    <input id="barreRecherche" type="text" placeholder="Rechercher...">
+    <label><input type="checkbox" value="potions"> Potions</label>
+    <label><input type="checkbox" value="armures"> Armures</label>
+    <label><input type="checkbox" value="armes"> Armes</label>
+    <label><input type="checkbox" value="sorts"> Sorts</label>
   </section>
 
   <?php if (empty($itemsInventaire)): ?>
@@ -183,6 +184,65 @@ foreach ($itemsInventaire as $item) {
 
   <?php endif; ?>
 </main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const barreRecherche = document.getElementById('barreRecherche');
+    const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
+    const sections = document.querySelectorAll('.section-items');
+
+    function appliquerFiltres() {
+      const recherche = barreRecherche.value.toLowerCase().trim();
+
+      // Types cochés
+      const typesSelectionnes = [];
+      checkboxes.forEach(function (checkbox) {
+        if (checkbox.checked) {
+          const texteLabel = checkbox.parentElement.textContent.trim().toLowerCase();
+          typesSelectionnes.push(texteLabel);
+        }
+      });
+
+      sections.forEach(function (section) {
+        const typeSection = section.querySelector('h2').textContent.trim().toLowerCase();
+        const cartes = section.querySelectorAll('.item-card');
+        let auMoinsUneVisible = false;
+
+        cartes.forEach(function (carte) {
+          const nomItem = carte.querySelector('h3').textContent.toLowerCase();
+
+          const matchRecherche = nomItem.includes(recherche);
+          // Si aucune checkbox cochée, on accepte tous les types
+          const matchType = typesSelectionnes.length === 0 || typesSelectionnes.includes(typeSection);
+
+          if (matchRecherche && matchType) {
+            carte.style.display = '';
+            auMoinsUneVisible = true;
+          } else {
+            carte.style.display = 'none';
+          }
+        });
+
+        // Cacher la section complète s'il n'y a aucun item visible
+        if (auMoinsUneVisible) {
+          section.style.display = '';
+        } else {
+          section.style.display = 'none';
+        }
+      });
+    }
+
+    // Recherche en direct
+    barreRecherche.addEventListener('input', appliquerFiltres);
+
+    // Filtres checkbox
+    checkboxes.forEach(function (checkbox) {
+      checkbox.addEventListener('change', appliquerFiltres);
+    });
+
+    appliquerFiltres();
+  });
+</script>
 
 </body>
 </html>
