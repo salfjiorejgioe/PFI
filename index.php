@@ -93,7 +93,11 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
+              <form method="post" action="panier.php">
+                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
+                <input type="submit" name="action" value="Ajouter" class="btn-add">
+              </form>
+          
             </a>
           <?php endforeach; ?>
         </div>
@@ -119,7 +123,10 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
+              <form method="post" action="panier.php">
+                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
+                <input type="submit" name="action" value="Ajouter" class="btn-add">
+              </form>
             </a>
           <?php endforeach; ?>
         </div>
@@ -145,7 +152,10 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
+              <form method="post" action="panier.php">
+                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
+                <input type="submit" name="action" value="Ajouter" class="btn-add">
+              </form>
             </a>
           <?php endforeach; ?>
         </div>
@@ -171,7 +181,15 @@ foreach ($items as $item) {
               <h3><?php echo h($item['nom']); ?></h3>
               <p>Prix : <?php echo (int) $item['prix']; ?></p>
               <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
-              <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">Ajouter au panier</button>
+
+
+             
+
+              <form method="post" action="panier.php">
+                <input type="hidden" name="idItem" value="<?php echo (int)$item['idItem']; ?>">
+                <input type="submit" name="action" value="Ajouter" class="btn-add">
+              </form>
+
             </a>
           <?php endforeach; ?>
         </div>
@@ -184,12 +202,13 @@ foreach ($items as $item) {
   <aside id="cart">
     <div class="cart-head">
       <h4>Panier</h4>
+      <div id="cart-total"></div>
       <form method="post">
+        <input type="submit" name="action" value="Acheter">
         <input type="submit" value="Acheter">
       </form>
       <a class="cart-close" href="#">✕</a>
     </div>
-
     <div class="cart-items">
       <?php include "panier.php"; ?>
       <p>Le Panier est Vide</p>
@@ -198,10 +217,64 @@ foreach ($items as $item) {
 
 </body>
 <script>
+  
+
   document.addEventListener('DOMContentLoaded', function () {
+    let panier = {};
     const barreRecherche = document.getElementById('barreRecherche');
     const checkboxes = document.querySelectorAll('#filtres input[type="checkbox"]');
     const sections = document.querySelectorAll('.section-items');
+    const cartContainer = document.getElementById('.cart-items');
+    const cartTotal = document.getElementById('cart-total');
+
+    function refreshCart(){
+      cartContainer.innerHTML = '';
+      let total = 0;
+      let estVide = true;
+      for(let i in panier){
+        const item = panier[id];
+        estVide = false;
+        const div = document.createElement('div');
+        div.classList.add('cart-item');
+        div.innerHTML = `<strong>${item.nomItem}</strong><br>
+                          ${item.prix} x ${item.quantite} = ${item.prix * item.quantite}
+                        `;
+        cartContainer.appendChild(div);
+        total += item.prix * item.quantite;
+      }
+      if(estVide){
+        cartContainer.innerHTML = "<p>Le panier est vide.</p>"
+      }
+      cartTotal.innerHTML = total;
+    }
+    document.querySelectorAll('.btn-add').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+
+        const cardPanier = this.closest('.item-card');
+        const id = this.dataset.idItem;
+        const nom = cardPanier.querySelector('h3').textContent;
+        const prix = parseInt(cardPanier.querySelector('p').textContent);
+
+        if(panier[id]){
+          panier[id].quantite++;
+
+        }
+        else{
+          panier[id] = {
+                id:id,
+                nom:nom,
+                prix:prix,
+                quantite:1};
+        }
+        refreshCart();
+        this.textContent = "item a été ajouté";
+
+
+      })
+    })
 
     function appliquerFiltres() {
       const recherche = barreRecherche.value.toLowerCase().trim();
