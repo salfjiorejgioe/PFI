@@ -184,9 +184,15 @@ foreach ($items as $item) {
 <aside id="cart">
   <div class="cart-head">
     <h4>Panier</h4>
-    <form action="panier.php" method="get">
-      <input type="submit" value="Acheter">
-    </form>
+
+    <div class="cart-head-actions">
+      <button type="button" id="btn-clear-cart">Vider</button>
+
+      <form action="panier.php" method="get">
+        <input type="submit" value="Acheter">
+      </form>
+    </div>
+
     <a class="cart-close" href="#">✕</a>
   </div>
 
@@ -208,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const cartItems = document.getElementById('cart-items');
   const cartTotal = document.getElementById('cart-total');
+  const btnClearCart = document.getElementById('btn-clear-cart');
 
   function appliquerFiltres() {
     const recherche = barreRecherche.value.toLowerCase().trim();
@@ -255,11 +262,27 @@ document.addEventListener('DOMContentLoaded', function () {
       const div = document.createElement('div');
       div.className = 'cart-item';
 
+      const imageHtml = item.photo
+        ? `<img src="${item.photo}" alt="${item.nom}" class="cart-item-image">`
+        : `<div class="cart-item-image no-image">Aucune image</div>`;
+
       div.innerHTML = `
-        <strong>${item.nom}</strong><br>
-        Prix : ${item.prix}<br>
-        Quantité : ${item.quantitePanier}<br>
-        Sous-total : ${item.sousTotal}
+        <div class="cart-item-row">
+          ${imageHtml}
+          <div class="cart-item-info">
+            <strong>${item.nom}</strong><br>
+            Prix : ${item.prix}<br>
+            Quantité : ${item.quantitePanier}<br>
+            Sous-total : ${item.sousTotal}
+          </div>
+        </div>
+
+        <div class="cart-item-actions">
+          <button type="button" class="btn-cart-minus" data-id="${item.idItem}">-</button>
+          <button type="button" class="btn-cart-plus" data-id="${item.idItem}">+</button>
+          <button type="button" class="btn-cart-remove" data-id="${item.idItem}">Retirer</button>
+        </div>
+
         <hr>
       `;
 
@@ -267,6 +290,57 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     cartTotal.textContent = 'Total : ' + total;
+
+    bindCartActionButtons();
+  }
+
+  function envoyerActionPanier(action, idItem = null) {
+    const body = new URLSearchParams();
+    body.append('action', action);
+
+    if (idItem !== null) {
+      body.append('idItem', idItem);
+    }
+
+    fetch('update_cart.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: body.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        alert(data.message);
+        return;
+      }
+
+      afficherPanierDepuisJson(data.items, data.total);
+    })
+    .catch(() => {
+      alert('Erreur lors de la mise à jour du panier.');
+    });
+  }
+
+  function bindCartActionButtons() {
+    document.querySelectorAll('.btn-cart-plus').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        envoyerActionPanier('increase', this.dataset.id);
+      });
+    });
+
+    document.querySelectorAll('.btn-cart-minus').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        envoyerActionPanier('decrease', this.dataset.id);
+      });
+    });
+
+    document.querySelectorAll('.btn-cart-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        envoyerActionPanier('remove', this.dataset.id);
+      });
+    });
   }
 
   function chargerPanier() {
@@ -328,6 +402,12 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+
+  if (btnClearCart) {
+    btnClearCart.addEventListener('click', function () {
+      envoyerActionPanier('clear');
+    });
+  }
 
   appliquerFiltres();
   chargerPanier();

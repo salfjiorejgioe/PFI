@@ -24,7 +24,7 @@ if ($idItem <= 0) {
 }
 
 try {
-    // Vérifier que l'item existe et est disponible
+    
     $stmt = $pdo->prepare("
         SELECT idItem, nom, prix, photo, quantiteStock
         FROM Items
@@ -42,7 +42,7 @@ try {
         exit;
     }
 
-    // Vérifier si déjà dans le panier
+
     $stmt = $pdo->prepare("
         SELECT quantitePanier
         FROM Paniers
@@ -55,7 +55,7 @@ try {
     if ($lignePanier) {
         $nouvelleQuantite = (int)$lignePanier['quantitePanier'] + 1;
 
-        // optionnel: bloquer si dépasse le stock
+     
         if ($nouvelleQuantite > (int)$item['quantiteStock']) {
             echo json_encode([
                 'success' => false,
@@ -86,7 +86,7 @@ try {
         $stmt->execute([$idJoueur, $idItem]);
     }
 
-    // Recharger le panier complet
+  
     $stmt = $pdo->prepare("
         SELECT p.idItem, p.quantitePanier, i.nom, i.prix, i.photo
         FROM Paniers p
