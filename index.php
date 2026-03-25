@@ -115,7 +115,7 @@ function afficherSection($titre, $listeItems)
             <button type="button" id="btn-clear-cart">Vider</button>
 
             <form action="panier.php" method="get">
-                <input type="submit" value="Acheter">
+               <button type="button" id="btn-buy-cart">Acheter</button>
             </form>
         </div>
 
@@ -345,6 +345,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+document.getElementById('btn-buy-cart').addEventListener('click', function (e) {
+    e.preventDefault();
+
+    fetch('panier.php', {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) {
+            chargerPanier();
+        }
+    })
+    .catch(() => {
+        alert("Erreur lors de l'achat.");
+    });
+});
     appliquerFiltres();
     chargerPanier();
     activerBoutonsAjouter();
