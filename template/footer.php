@@ -120,7 +120,7 @@
       <!-- Projet -->
       <div class="footer-main-left">
         <span class="footer-logo">⚔️ Marché Darquest</span>
-        <p class="footer-tagline">Projet scolaire — Gestion de marché médiéval fantastique</p>
+        <p class="footer-tagline">PFI - Projet Dirigé</p>
       </div>
 
       <!-- Équipe -->
