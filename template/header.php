@@ -65,6 +65,7 @@ $user = $_SESSION['user'] ?? null;
       <li><a href="paniertest.php">paniertest.php</a></li>
       <?php if (!empty($user) && !empty($user['estAdmin']) && (int)$user['estAdmin'] === 1): ?>
         <li><a href="admin.php">Admin</a></li>
+        <li><a href="gerer.php">Gérer</a></li>
       <?php endif; ?>
     </ul>
   </nav>

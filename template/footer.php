@@ -1,7 +1,7 @@
 <footer>
 
   <style>
-    /* ===== FOOTER SUIVEUR (COMME simple-footer) ===== */
+ 
     .footer-follow {
       position: fixed;
       bottom: 0;
@@ -68,7 +68,6 @@
       color: #c4b5fd;
     }
 
-    /* ===== FOOTER DE PAGE (AVEC ÉQUIPE) ===== */
     .site-footer-main {
       background: rgba(5, 8, 15, 0.9);
       color: #9ca3af;
@@ -113,42 +112,20 @@
     }
   </style>
 
-  <!-- FOOTER DE PAGE (AVEC ÉQUIPE) -->
-  <div class="site-footer-main">
-    <div class="footer-main-container">
 
-      <!-- Projet -->
-      <div class="footer-main-left">
-        <span class="footer-logo">⚔️ Marché Darquest</span>
-        <p class="footer-tagline">Projet scolaire — Gestion de marché médiéval fantastique</p>
-      </div>
 
-      <!-- Équipe -->
-      <div class="footer-main-team">
-        <p class="footer-team-title">Équipe</p>
-        <p class="footer-team-names">
-          DJOUDAD Massine · Jason Abboud · Salah Mehdi · Loïc Beaupré
-        </p>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- FOOTER SUIVEUR (COMME simple-footer) -->
   <div class="footer-follow">
     <div class="footer-follow-container">
 
-      <!-- gauche -->
+
       <div class="footer-follow-left">
         ✨ Bon magasinage
       </div>
 
-      <!-- centre -->
       <div class="footer-follow-center">
         ⚔️ Marché Darquest ©
       </div>
 
-      <!-- droite -->
       <div class="footer-follow-right">
         <a href="contact.php">Contact</a>
         <?php if (isset($_SESSION['user'])): ?>
