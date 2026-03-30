@@ -76,6 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             text-align: center;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+        .panier-item-grid * {
+            color:white;
+            text-decoration: none;
+        }
+
 
         .panier-item-grid:hover {
             transform: scale(1.03);
