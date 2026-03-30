@@ -72,41 +72,58 @@ try {
         throw new Exception("Pas assez d'or");
     }
 
-    // 5. Ajouter les items dans Inventaires + réduire stock
-    foreach ($panier as $item) {
-        $idItem = (int) $item['idItem'];
-        $qte = (int) $item['quantitePanier'];
-        $stockActuel = (int) $item['quantiteStock'];
+    
+foreach ($panier as $item) {
+    $idItem = (int) $item['idItem'];
+    $qte = (int) $item['quantitePanier'];
+    $stockActuel = (int) $item['quantiteStock'];
 
-        // Ajouter dans Inventaires
+    // Vérifier si l'item existe déjà dans Inventaires pour ce joueur
+    $stmt = $pdo->prepare("
+        SELECT quantiteInventaire
+        FROM Inventaires
+        WHERE idJoueur = ? AND idItem = ?
+    ");
+    $stmt->execute([$idJoueur, $idItem]);
+    $itemExiste = $stmt->fetch();
+
+    // Ajouter ou mettre à jour dans Inventaires
+    if ($itemExiste) {
+        $stmt = $pdo->prepare("
+            UPDATE Inventaires
+            SET quantiteInventaire = quantiteInventaire + ?
+            WHERE idJoueur = ? AND idItem = ?
+        ");
+        $stmt->execute([$qte, $idJoueur, $idItem]);
+    } else {
         $stmt = $pdo->prepare("
             INSERT INTO Inventaires (idJoueur, idItem, quantiteInventaire)
             VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE quantiteInventaire = quantiteInventaire + VALUES(quantiteInventaire)
         ");
         $stmt->execute([$idJoueur, $idItem, $qte]);
-
-        // Réduire le stock
-        $nouveauStock = $stockActuel - $qte;
-
-        if ($nouveauStock <= 0) {
-            $stmt = $pdo->prepare("
-                UPDATE Items
-                SET quantiteStock = 0, estDisponible = 0
-                WHERE idItem = ?
-            ");
-            $stmt->execute([$idItem]);
-        } else {
-            $stmt = $pdo->prepare("
-                UPDATE Items
-                SET quantiteStock = ?
-                WHERE idItem = ?
-            ");
-            $stmt->execute([$nouveauStock, $idItem]);
-        }
     }
 
-    // 6. Retirer l'or
+    // Réduire le stock
+    $nouveauStock = $stockActuel - $qte;
+
+    if ($nouveauStock <= 0) {
+        $stmt = $pdo->prepare("
+            UPDATE Items
+            SET quantiteStock = 0, estDisponible = 0
+            WHERE idItem = ?
+        ");
+        $stmt->execute([$idItem]);
+    } else {
+        $stmt = $pdo->prepare("
+            UPDATE Items
+            SET quantiteStock = ?
+            WHERE idItem = ?
+        ");
+        $stmt->execute([$nouveauStock, $idItem]);
+    }
+}
+
+
     $nouveauGold = $capitalGold - $total;
 
     $stmt = $pdo->prepare("
@@ -116,17 +133,14 @@ try {
     ");
     $stmt->execute([$nouveauGold, $idJoueur]);
 
-    // 7. Vider le panier
     $stmt = $pdo->prepare("
         DELETE FROM Paniers
         WHERE idJoueur = ?
     ");
     $stmt->execute([$idJoueur]);
 
-    // 8. Commit
     $pdo->commit();
 
-    // 9. Mettre à jour la session
     $_SESSION['user']['or'] = $nouveauGold;
 
     echo json_encode([
