@@ -50,6 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             margin: 0 10%;
             border-radius: 12px;
         }
+        .panier-principal > *{
+            opacity: 1;
+        }
 
         /* Total */
         #cart-total {
@@ -66,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         /* Bulle (item) */
         .panier-item-grid {
-            background: white;
+            background: black;
             border-radius: 15px;
             padding: 15px;
             text-align: center;
@@ -79,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         /* Image */
         .panier-item-grid img {
-            width: 100%;
+            width: auto;
             height: 120px;
             object-fit: cover;
             border-radius: 10px;
@@ -105,8 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            background-color: #007bff;
-            color: white;
+            background-color: white;
+            color: black;
+            opacity: 0.6;
         }
 
         .panier-item-grid input[value="Retirer"] {
@@ -129,9 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             <div id="cart-total"></div>
             <form method="post">
                 <input type="submit" name="action" value="Acheter">
-                <input type="submit" name="action" value="Vider">
+                <input type="submit" name="action" value="Vider panier">
             </form>
-            <a class="cart-close" href="index.php">sortir</a>
         </div>
         <div class="panier-items">
             <?php afficher_panier($pdo); ?>

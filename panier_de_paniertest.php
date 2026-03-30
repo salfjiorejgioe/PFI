@@ -348,7 +348,7 @@ function afficher_panier($pdo)
         $quantite = $articles["quantitePanier"];
         $prix = $info_article["prix"];
         $image = $info_article["photo"];
-
+        $prixtotal = $prix * $quantite;
 
         // faire en sorte d'avoir des boutons qui appellent les fonctions ajouter/retirer en passant l'id de l'item quand appuyés
         echo '
@@ -356,8 +356,9 @@ function afficher_panier($pdo)
         <a class="" href="details.php?id=' . $idItem . '">
             <img src="' . $image . '">
             <h3>' . $nomItem . '</h3>
-            <p>' . $prix . ' or</p>
-            <p>' . $quantite . '</p>
+            <p>Prix unitaire: ' . $prix . ' or</p>
+            <p>Quantité ' . $quantite . '</p>
+            <p>Prix total: ' . $prixtotal . ' or</p>
         </a>
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
