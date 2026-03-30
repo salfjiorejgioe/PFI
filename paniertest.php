@@ -5,7 +5,7 @@ require_once 'helpers.php';
 require_once 'panier_de_paniertest.php';
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'Ajouter') {
         ajouter_objet_panier($pdo, $_POST['idItem']);
     } else if ($_POST['action'] === 'Retirer') {
