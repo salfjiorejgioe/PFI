@@ -178,7 +178,13 @@ function acheter_panier($pdo)
 
         // get panier
         $stmt = $pdo->prepare("
-            SELECT p.idItem, p.quantitePanier, i.prix, i.quantiteStock, i.estDisponible
+            SELECT 
+            p.idItem, 
+            p.quantitePanier, 
+            i.prix, 
+            i.typeItem, 
+            i.quantiteStock, 
+            i.estDisponible
             FROM Paniers p
             JOIN Items i ON p.idItem = i.idItem
             WHERE p.idJoueur = ?
@@ -194,6 +200,9 @@ function acheter_panier($pdo)
         $total = 0;
 
         foreach ($panier as $item) {
+            if ($item['typeItem'] == 'sort' && $_SESSION['user']['estMage'] != 1) {
+                throw new Exception("Seuls les mages peuvent acheter des sorts");
+            }
             $prix = (int) $item['prix'];
             $quantite = (int) $item['quantitePanier'];
             $stock = (int) $item['quantiteStock'];

@@ -6,15 +6,15 @@ require_once 'panier_de_paniertest.php';
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if ($_POST['action'] == 'Ajouter') {
+    if ($_POST['action'] === 'Ajouter') {
         ajouter_objet_panier($pdo, $_POST['idItem']);
-    } else if ($_POST['action'] == 'Retirer') {
+    } else if ($_POST['action'] === 'Retirer') {
         retirer_objet_panier($pdo, $_POST['idItem']);
-    } else if ($_POST['action'] == 'Acheter') {
+    } else if ($_POST['action'] === 'Acheter') {
         acheter_panier($pdo);
-    } else if ($_POST['action'] == 'Vider') {
+    } else if ($_POST['action'] === 'Vider panier') {
         vider_panier($pdo, $_SESSION['user']['idJoueur']);
-    } else if ($_POST['action'] == 'Supprimer du panier') {
+    } else if ($_POST['action'] === 'Supprimer du panier') {
         supprimer_objet_du_panier($pdo, $_POST['idItem']);
     }
 
