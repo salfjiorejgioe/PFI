@@ -1,51 +1,142 @@
-<?php 
+<?php
 session_start();
+require_once 'db.php';
+require_once 'helpers.php';
+require_once 'panier_de_paniertest.php';
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] == 'Ajouter') {
+        ajouter_objet_panier($pdo, $_POST['idItem']);
+    } 
+    else if ($_POST['action'] == 'Retirer') {
+        retirer_objet_panier($pdo, $_POST['idItem']);
+    }
+    else if ($_POST['action'] == 'Acheter') {
+        acheter_panier($pdo);
+    }
+    else if ($_POST['action'] == 'Vider') {
+        vider_panier($pdo, $_SESSION['user']['idJoueur']);
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="public/css/style.css">
-        <title>paniertest.</title>
-        <style>
-            #panier-principal{
-                margin-left: 10%;
-                margin-right: 10%;
-                display:grid;
-                align-items: ;
-                border: 50px red solid;
-            }
-            #panier-items-grid{
-                display: grid;
-                width:20%;
-                height:400px;
-                border: 50px red solid;
-                flex-wrap: wrap;
-                grid-template-columns: 30% auto;
-            }
-            
-        </style>
-    </head>
-    <body>
-        <?php //include_once 'template/header.php' ?>
-        
-        
-        <main>
-            <div class="panier-principal">
-                <h4>Panier</h4>
-                <div id="cart-total"></div>
-                <form method="post">
-                    <input type="submit" name="action" value="Acheter">
-                    <input type="submit" name="action" value="Vider">
-                </form>
-                <a class="cart-close" href="index.php">sortir</a>
-            </div>
-            <div class="panier-items">
-                <?php include "panier.php"; ?>
-            </div>
-        </main>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="public/css/style.css">
+    <title>paniertest.</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        /* Bloc principal */
+        .panier-principal {
+            background: black;
+            padding: 20px;
+            margin: 0 10%;
+            border-radius: 12px;
+        }
+
+        /* Total */
+        #cart-total {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Grille des items */
+        .panier-items {
+            display: grid;
+            gap: 20px;
+            margin: 20px 10%;
+        }
+
+        /* Bulle (item) */
+        .panier-item-grid {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .panier-item-grid:hover {
+            transform: scale(1.03);
+        }
+
+        /* Image */
+        .panier-item-grid img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Texte */
+        .panier-item-grid h3 {
+            margin: 10px 0 5px;
+        }
+
+        .panier-item-grid p {
+            margin: 5px 0;
+        }
+
+        /* Boutons */
+        .panier-item-grid form {
+            margin-top: 10px;
+        }
+
+        .panier-item-grid input[type="submit"] {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .panier-item-grid input[value="Retirer"] {
+            background-color: #dc3545;
+        }
+
+        .panier-item-grid input[type="submit"]:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <?php include_once 'template/header.php'; ?>
+
+
+    <main>
+        <div class="panier-principal">
+            <h4>Panier</h4>
+            <div id="cart-total"></div>
+            <form method="post">
+                <input type="submit" name="action" value="Acheter">
+                <input type="submit" name="action" value="Vider">
+            </form>
+            <a class="cart-close" href="index.php">sortir</a>
+        </div>
+        <div class="panier-items">
+            <?php afficher_panier($pdo); ?>
+        </div>
+    </main>
+</body>
+
 </html>
