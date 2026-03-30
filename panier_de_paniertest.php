@@ -71,7 +71,8 @@ function ajouter_objet_panier($pdo, $idItem)
     $info_item = obtenirArticle($pdo, $idItem);
 
     if (!$info_item || $info_item["estDisponible"] != 1 || $info_item['quantiteStock'] <= 0) { //item non-disponible. Impossible d'ajouter
-        return false; // faire un popup "item indisponible"/////////////////////////////////////
+        //echo "<script>alert('Ajout d'item impossible');</script>";
+        return false;
     }
     $sql = "SELECT quantitePanier
             FROM Paniers 
@@ -121,6 +122,7 @@ function retirer_objet_panier($pdo, $idItem)
     $item = $stmt->fetch();
 
     if (!$item) {
+        //echo "<script>alert('Item absent du panier');</script>";
         return false; //pas dans panier
     }
 
@@ -146,6 +148,7 @@ function retirer_objet_panier($pdo, $idItem)
         return true;
 
     } catch (Exception $e) {
+        //echo "<script>alert('Erreur');</script>";
         return false;
     }
 }
@@ -153,6 +156,7 @@ function retirer_objet_panier($pdo, $idItem)
 function acheter_panier($pdo)
 {
     if (!isset($_SESSION['user']['idJoueur'])) {
+        //echo "<script>alert('Joueur non-connecté');</script>";
         return false;
     }
 
@@ -169,6 +173,7 @@ function acheter_panier($pdo)
         $joueur = $stmt->fetch();
 
         if (!$joueur) {
+            //echo "<script>alert('Joueur introuvable');</script>";
             throw new Exception("Joueur introuvable");
         }
 
@@ -269,6 +274,7 @@ function acheter_panier($pdo)
 
         // pas assez au total
         if ($manque > 0) {
+            //echo "<script>alert('Pas assez d'argent au total');</script>";
             throw new Exception("Pas assez d'argent total");
         }
 
@@ -327,6 +333,7 @@ function acheter_panier($pdo)
 function supprimer_objet_du_panier($pdo, $idItem)
 {
     if (!isset($_SESSION['user']['idJoueur'])) {
+        //echo "<script>alert('Joueur non-connecté');</script>";
         return false;
     }
 
