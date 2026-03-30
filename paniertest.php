@@ -8,16 +8,16 @@ require_once 'panier_de_paniertest.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] == 'Ajouter') {
         ajouter_objet_panier($pdo, $_POST['idItem']);
-    } 
-    else if ($_POST['action'] == 'Retirer') {
+    } else if ($_POST['action'] == 'Retirer') {
         retirer_objet_panier($pdo, $_POST['idItem']);
-    }
-    else if ($_POST['action'] == 'Acheter') {
+    } else if ($_POST['action'] == 'Acheter') {
         acheter_panier($pdo);
-    }
-    else if ($_POST['action'] == 'Vider') {
+    } else if ($_POST['action'] == 'Vider') {
         vider_panier($pdo, $_SESSION['user']['idJoueur']);
+    } else if ($_POST['action'] == 'Supprimer du panier') {
+        supprimer_objet_du_panier($pdo, $_POST['idItem']);
     }
+
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
@@ -50,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             margin: 0 10%;
             border-radius: 12px;
         }
-        .panier-principal > *{
+
+        .panier-principal>* {
             opacity: 1;
         }
 
@@ -110,15 +111,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             cursor: pointer;
             background-color: white;
             color: black;
-            opacity: 0.6;
         }
-
-        .panier-item-grid input[value="Retirer"] {
-            background-color: #dc3545;
-        }
-
         .panier-item-grid input[type="submit"]:hover {
             opacity: 0.8;
+        }
+        .panier-item-grid input[value="Supprimer du panier"] {
+            background-color: #dc3545;
         }
     </style>
 </head>

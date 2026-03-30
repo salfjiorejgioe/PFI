@@ -315,6 +315,27 @@ function acheter_panier($pdo)
         return false;
     }
 }
+function supprimer_objet_du_panier($pdo, $idItem)
+{
+    if (!isset($_SESSION['user']['idJoueur'])) {
+        return false;
+    }
+
+    $idJoueur = $_SESSION['user']['idJoueur'];
+
+    try {
+        $stmt = $pdo->prepare("
+            DELETE FROM Paniers
+            WHERE idJoueur = ? AND idItem = ?
+        ");
+        $stmt->execute([$idJoueur, $idItem]);
+
+        return true;
+
+    } catch (Exception $e) {
+        return false;
+    }
+}
 
 function vider_panier($pdo, $idJoueur)
 {
@@ -364,6 +385,7 @@ function afficher_panier($pdo)
             <input type="hidden" name="idItem" value="' . $idItem . '">
             <input type="submit" name="action" value="Ajouter"/> 
             <input type="submit" name="action" value="Retirer"/>
+            <input type="submit" name="action" value="Supprimer du panier"/>
         </form>
         
     </div>
