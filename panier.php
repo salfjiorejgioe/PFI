@@ -65,73 +65,81 @@ try {
         $total += ($prix * $qte);
     }
 
-    // 4. Vérifier l'or du joueur
     $capitalGold = (int) $joueur['gold'];
+    $capitalArgent = (int) $joueur['argent'];
+    $capitalBronzeSimple = (int) $joueur['bronze'];
 
-    if ($capitalGold < $total) {
-        throw new Exception("Pas assez d'or");
+    $capitalBronze = ($capitalGold * 100) + ($capitalArgent * 10) + $capitalBronzeSimple;
+
+
+    $totalBronze = $total * 100;
+
+    if ($capitalBronze < $totalBronze) {
+        throw new Exception("Pas assez d'argent");
     }
 
-    
-foreach ($panier as $item) {
-    $idItem = (int) $item['idItem'];
-    $qte = (int) $item['quantitePanier'];
-    $stockActuel = (int) $item['quantiteStock'];
 
-    // Vérifier si l'item existe déjà dans Inventaires pour ce joueur
-    $stmt = $pdo->prepare("
+    foreach ($panier as $item) {
+        $idItem = (int) $item['idItem'];
+        $qte = (int) $item['quantitePanier'];
+        $stockActuel = (int) $item['quantiteStock'];
+
+        // Vérifier si l'item existe déjà dans Inventaires pour ce joueur
+        $stmt = $pdo->prepare("
         SELECT quantiteInventaire
         FROM Inventaires
         WHERE idJoueur = ? AND idItem = ?
     ");
-    $stmt->execute([$idJoueur, $idItem]);
-    $itemExiste = $stmt->fetch();
+        $stmt->execute([$idJoueur, $idItem]);
+        $itemExiste = $stmt->fetch();
 
-    // Ajouter ou mettre à jour dans Inventaires
-    if ($itemExiste) {
-        $stmt = $pdo->prepare("
+        // Ajouter ou mettre à jour dans Inventaires
+        if ($itemExiste) {
+            $stmt = $pdo->prepare("
             UPDATE Inventaires
             SET quantiteInventaire = quantiteInventaire + ?
             WHERE idJoueur = ? AND idItem = ?
         ");
-        $stmt->execute([$qte, $idJoueur, $idItem]);
-    } else {
-        $stmt = $pdo->prepare("
+            $stmt->execute([$qte, $idJoueur, $idItem]);
+        } else {
+            $stmt = $pdo->prepare("
             INSERT INTO Inventaires (idJoueur, idItem, quantiteInventaire)
             VALUES (?, ?, ?)
         ");
-        $stmt->execute([$idJoueur, $idItem, $qte]);
-    }
+            $stmt->execute([$idJoueur, $idItem, $qte]);
+        }
 
-    // Réduire le stock
-    $nouveauStock = $stockActuel - $qte;
+        // Réduire le stock
+        $nouveauStock = $stockActuel - $qte;
 
-    if ($nouveauStock <= 0) {
-        $stmt = $pdo->prepare("
-            UPDATE Items
-            SET quantiteStock = 0, estDisponible = 0
-            WHERE idItem = ?
-        ");
-        $stmt->execute([$idItem]);
-    } else {
-        $stmt = $pdo->prepare("
+       
+            $stmt = $pdo->prepare("
             UPDATE Items
             SET quantiteStock = ?
             WHERE idItem = ?
         ");
-        $stmt->execute([$nouveauStock, $idItem]);
+            $stmt->execute([$nouveauStock, $idItem]);
+        
     }
-}
 
 
-    $nouveauGold = $capitalGold - $total;
+    // Retirer le prix total du capital du joueur
+    $resteBronze = $capitalBronze - $totalBronze;
 
+    // Reconvertir en gold / argent / bronze
+    $nouveauGold = intdiv($resteBronze, 100);
+    $resteBronze = $resteBronze % 100;
+
+    $nouvelArgent = intdiv($resteBronze, 10);
+    $nouveauBronze = $resteBronze % 10;
+
+    // Mettre à jour le joueur
     $stmt = $pdo->prepare("
-        UPDATE Joueurs
-        SET gold = ?
-        WHERE idJoueur = ?
-    ");
-    $stmt->execute([$nouveauGold, $idJoueur]);
+    UPDATE Joueurs
+    SET gold = ?, argent = ?, bronze = ?
+    WHERE idJoueur = ?
+");
+    $stmt->execute([$nouveauGold, $nouvelArgent, $nouveauBronze, $idJoueur]);
 
     $stmt = $pdo->prepare("
         DELETE FROM Paniers
@@ -141,7 +149,9 @@ foreach ($panier as $item) {
 
     $pdo->commit();
 
-    $_SESSION['user']['or'] = $nouveauGold;
+    $_SESSION['user']['gold'] = $nouveauGold;
+    $_SESSION['user']['argent'] = $nouvelArgent;
+    $_SESSION['user']['bronze'] = $nouveauBronze;
 
     echo json_encode([
         'success' => true,
