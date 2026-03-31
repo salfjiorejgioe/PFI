@@ -20,9 +20,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Vérifier unicité alias
         $stmt = $pdo->prepare("SELECT idJoueur FROM Joueurs WHERE alias = :alias");
         $stmt->execute([':alias' => $alias]);
+
+        //Verifier unicite courriel
+        $stmtCourriel = $pdo->prepare("SELECT idJoueur FROM Joueurs WHERE courriel = :courriel");
+        $stmtCourriel->execute([':courriel' => $email]);
         if ($stmt->fetch()) {
             $errors[] = "Cet alias est déjà utilisé.";
-        } else {
+        }
+        if (!empty($email)) {
+            if ($stmtCourriel->fetch()) {
+                $errors[] = "Ce courriel est déjà utilisé.";
+            }
+        } 
+        if (empty($errors)){
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $insert = $pdo->prepare("
@@ -42,9 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :alias,
                     :nom,
                     :prenom,
-                    5,      -- gold initial
-                    15,     -- argent initial
-                    30,     -- bronze initial
+                    1000,      -- gold initial
+                    1000,     -- argent initial
+                    1000,     -- bronze initial
                     0,      -- estMage
                     :motDePasse,
                     :courriel,
@@ -54,13 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ");
 
             $insert->execute([
-                ':alias'  => $alias,
-                ':nom'    => $nom,
+                ':alias' => $alias,
+                ':nom' => $nom,
                 ':prenom' => $prenom,
-                ':mPasse' => $hash,
-                ':email'  => $email
+                ':motDePasse' => $hash,
+                ':courriel' => $email
             ]);
-
 
             $success = "Compte créé. Vous pouvez maintenant vous connecter.";
         }
@@ -74,8 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Inscription - Darquest</title>
     <link rel="stylesheet" href="public/css/style.css">
-    <title>Inscription - Darquest</title>
-    <link rel="stylesheet" href="public/css/style.css">
 </head>
 
 <body>
@@ -83,12 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Création de compte</h1>
     </header>
 
-<main class="auth-container">
-    <?php if ($errors): ?>
-        <div class="error">
-            <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>
-        </div>
-    <?php endif; ?>
+    <main class="auth-container signup-page">
+        <?php if ($errors): ?>
+            <div class="error">
+                <?php foreach ($errors as $e)
+                    echo "<p>" . htmlspecialchars($e) . "</p>"; ?>
+            </div>
+        <?php endif; ?>
 
         <?php if ($success): ?>
             <div class="success">

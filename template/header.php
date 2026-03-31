@@ -1,10 +1,4 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-
-
 $user = $_SESSION['user'] ?? null;
 ?>
 <header>
@@ -28,7 +22,7 @@ $user = $_SESSION['user'] ?? null;
 
           <div class="user-wallet">
             <div class="wallet-item gold">
-              <span class="wallet-emoji">🪙</span>
+              <span class="wallet-emoji">🥇</span>
               <span class="wallet-label">Gold</span>
               <span class="wallet-value"><?php echo (int)$user['or']; ?></span>
             </div>
@@ -59,11 +53,12 @@ $user = $_SESSION['user'] ?? null;
     <ul>
       <li><a href="index.php">Accueil</a></li>
       <li><a href="inventaire.php">Inventaire</a></li>
-      <li><a href="#">Vendre</a></li>
       <li><a href="#">Enigma</a></li>
       <li><a href="#">Profil</a></li>
+      <li><a href="paniertest.php">Panier</a></li>
       <?php if (!empty($user) && !empty($user['estAdmin']) && (int)$user['estAdmin'] === 1): ?>
         <li><a href="admin.php">Admin</a></li>
+        <li><a href="gerer.php">Gérer</a></li>
       <?php endif; ?>
     </ul>
   </nav>

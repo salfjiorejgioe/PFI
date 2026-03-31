@@ -1,92 +1,171 @@
 <?php
+session_start();
 require_once 'db.php';
 
+header('Content-Type: application/json');
 
-if (isset($_SESSION['joueur_id'])) {
-        $joueur_id = $_SESSION['joueur_id'];
-        $joueur_alias = $_SESSION['joueur_alias'] ;
-        $joueur_or = $_SESSION['joueur_or'];
-        $joueur_argent = $_SESSION['joueur_argent'];
-        $joueur_bronze = $_SESSION['joueur_bronze'];
-        $joueur_est_mage = $_SESSION['joueur_est_mage'];
-
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Non connecté'
+    ]);
+    exit;
 }
 
+$idJoueur = (int) $_SESSION['user']['idJoueur'];
 
-function obtenirArticlesPanier($pdo)
-{
-    $sql = "SELECT 
-                idJoueur,
-                idItem,
-                quantitePanier
-            FROM Paniers";
-    try {
-        $stmt = $pdo->query($sql);
-        $articles = $stmt->fetchAll(); // toutes les lignes
-        return $articles;
+try {
+    $pdo->beginTransaction();
 
-    } catch (Exception $e) {
-        return [];
+    // 1. Charger le joueur
+    $stmt = $pdo->prepare("
+        SELECT idJoueur, gold, argent, bronze
+        FROM Joueurs
+        WHERE idJoueur = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$idJoueur]);
+    $joueur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$joueur) {
+        throw new Exception("Joueur introuvable");
     }
-}
 
-function obtenir_article($pdo, $idItem) {
+    // 2. Charger le panier
+    $stmt = $pdo->prepare("
+        SELECT p.idItem, p.quantitePanier, i.nom, i.prix, i.quantiteStock, i.estDisponible
+        FROM Paniers p
+        INNER JOIN Items i ON p.idItem = i.idItem
+        WHERE p.idJoueur = ?
+    ");
+    $stmt->execute([$idJoueur]);
+    $panier = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-    $sql = "SELECT 
-                idItem,
-                nom,
-                quantiteStock,
-                prix,
-                photo,
-                typeItem,
-                estDisponible
-            FROM Items
-            ORDER BY typeItem DESC
-            WHERE idItem = ?"; // pas fini
-
-
-    try {
-        $stmt = $pdo->query($sql);
-        $articles = $stmt->fetchAll(); 
-        return $articles;
-
-    } catch (Exception $e) {
-        return [];
+    if (!$panier || count($panier) === 0) {
+        throw new Exception("Panier vide");
     }
+
+    // 3. Vérifier stock + calculer total
+    $total = 0;
+
+    foreach ($panier as $item) {
+        $stock = (int) $item['quantiteStock'];
+        $qte = (int) $item['quantitePanier'];
+        $prix = (int) $item['prix'];
+        $dispo = (int) $item['estDisponible'];
+
+        if ($dispo !== 1) {
+            throw new Exception("Un item n'est plus disponible : " . $item['nom']);
+        }
+
+        if ($stock < $qte) {
+            throw new Exception("Stock insuffisant pour : " . $item['nom']);
+        }
+
+        $total += ($prix * $qte);
+    }
+
+    $capitalGold = (int) $joueur['gold'];
+    $capitalArgent = (int) $joueur['argent'];
+    $capitalBronzeSimple = (int) $joueur['bronze'];
+
+    $capitalBronze = ($capitalGold * 100) + ($capitalArgent * 10) + $capitalBronzeSimple;
+
+
+    $totalBronze = $total * 100;
+
+    if ($capitalBronze < $totalBronze) {
+        throw new Exception("Pas assez d'argent");
+    }
+
+
+    foreach ($panier as $item) {
+        $idItem = (int) $item['idItem'];
+        $qte = (int) $item['quantitePanier'];
+        $stockActuel = (int) $item['quantiteStock'];
+
+        // Vérifier si l'item existe déjà dans Inventaires pour ce joueur
+        $stmt = $pdo->prepare("
+        SELECT quantiteInventaire
+        FROM Inventaires
+        WHERE idJoueur = ? AND idItem = ?
+    ");
+        $stmt->execute([$idJoueur, $idItem]);
+        $itemExiste = $stmt->fetch();
+
+        // Ajouter ou mettre à jour dans Inventaires
+        if ($itemExiste) {
+            $stmt = $pdo->prepare("
+            UPDATE Inventaires
+            SET quantiteInventaire = quantiteInventaire + ?
+            WHERE idJoueur = ? AND idItem = ?
+        ");
+            $stmt->execute([$qte, $idJoueur, $idItem]);
+        } else {
+            $stmt = $pdo->prepare("
+            INSERT INTO Inventaires (idJoueur, idItem, quantiteInventaire)
+            VALUES (?, ?, ?)
+        ");
+            $stmt->execute([$idJoueur, $idItem, $qte]);
+        }
+
+        // Réduire le stock
+        $nouveauStock = $stockActuel - $qte;
+
+       
+            $stmt = $pdo->prepare("
+            UPDATE Items
+            SET quantiteStock = ?
+            WHERE idItem = ?
+        ");
+            $stmt->execute([$nouveauStock, $idItem]);
+        
+    }
+
+
+    // Retirer le prix total du capital du joueur
+    $resteBronze = $capitalBronze - $totalBronze;
+
+    // Reconvertir en gold / argent / bronze
+    $nouveauGold = intdiv($resteBronze, 100);
+    $resteBronze = $resteBronze % 100;
+
+    $nouvelArgent = intdiv($resteBronze, 10);
+    $nouveauBronze = $resteBronze % 10;
+
+    // Mettre à jour le joueur
+    $stmt = $pdo->prepare("
+    UPDATE Joueurs
+    SET gold = ?, argent = ?, bronze = ?
+    WHERE idJoueur = ?
+");
+    $stmt->execute([$nouveauGold, $nouvelArgent, $nouveauBronze, $idJoueur]);
+
+    $stmt = $pdo->prepare("
+        DELETE FROM Paniers
+        WHERE idJoueur = ?
+    ");
+    $stmt->execute([$idJoueur]);
+
+    $pdo->commit();
+
+    $_SESSION['user']['gold'] = $nouveauGold;
+    $_SESSION['user']['argent'] = $nouvelArgent;
+    $_SESSION['user']['bronze'] = $nouveauBronze;
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Achat réussi',
+        'nouveauGold' => $nouveauGold
+    ]);
+
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
-$articles_panier = obtenirArticlesPanier($pdo);
-
-// question: en permanence vérifier si l'item est toujours disponible?
-foreach ($articles_panier as $articles){
-    $info_article = obtenir_article($pdo, $articles['idItem']);
-
-    $nomItem = $info_article["nom"];
-    $quantite = $info_article["quantitePanier"];
-    $prix = $info_article["prix"];
-    $image = $info_article["photo"];
-
-
-    echo '
-    <div class="panier-item-grid">
-            <img src="' . $image . '">
-            <h3>' . $nomItem . '</h3>
-            <p>' . $prix . '</p>
-            <p>' . $quantite . '</p>
-    </div>
-    ';
-
-    // avec lien vers details?
-
-    // echo '
-    // <div class="panier-item-grid">
-    //     <a class="item-card" href="details.php?id='.$articles['idItem'] .'">
-    //         <img src="' . $image . '">
-    //         <h3>' . $nomItem . '</h3>
-    //         <p>' . $prix . '</p>
-    //         <p>' . $quantite . '</p>
-    //     </a>
-    // </div>
-    // ';
-}
-?>
