@@ -4,124 +4,268 @@ require_once 'db.php';
 require_once 'helpers.php';
 require_once 'panier_de_paniertest.php';
 
-
 if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if ($_POST['action'] === 'Ajouter') {
-        ajouter_objet_panier($pdo, $_POST['idItem']);
-    } else if ($_POST['action'] === 'Retirer') {
-        retirer_objet_panier($pdo, $_POST['idItem']);
-    } else if ($_POST['action'] === 'Acheter') {
-        acheter_panier($pdo);
+
+    if ($_POST['action'] === 'Acheter') {
+        $resultat = acheter_panier($pdo);
+        $_SESSION['message_panier'] = $resultat['message'];
+        $_SESSION['message_panier_success'] = $resultat['success'];
+
     } else if ($_POST['action'] === 'Vider panier') {
         vider_panier($pdo, $_SESSION['user']['idJoueur']);
+        $_SESSION['message_panier'] = "Panier vidé";
+        $_SESSION['message_panier_success'] = true;
+
     } else if ($_POST['action'] === 'Supprimer du panier') {
         supprimer_objet_du_panier($pdo, $_POST['idItem']);
+        $_SESSION['message_panier'] = "Article supprimé du panier";
+        $_SESSION['message_panier_success'] = true;
+
+    } else if ($_POST['action'] === 'Modifier quantité') {
+        $idItem = isset($_POST['idItem']) ? (int) $_POST['idItem'] : 0;
+        $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 0;
+
+        $resultat = modifier_quantite_panier($pdo, $idItem, $quantite);
+        $_SESSION['message_panier'] = $resultat['message'];
+        $_SESSION['message_panier_success'] = $resultat['success'];
     }
 
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
-?>
 
+$articles_panier = obtenirArticlesPanier($pdo);
+$totalOr = 0;
+
+foreach ($articles_panier as $article) {
+    $info = obtenirArticle($pdo, $article['idItem']);
+    if ($info) {
+        $totalOr += ((int)$info['prix'] * (int)$article['quantitePanier']);
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier</title>
+
     <link rel="stylesheet" href="public/css/style.css">
-    <title>paniertest.</title>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
+            font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+            background-color: #111;
         }
 
         main {
-            padding: 20px;
+            padding: 20px 0 50px 0;
         }
 
-        /* Bloc principal */
-        .panier-principal {
-            background: black;
-            padding: 20px;
-            margin: 0 10%;
-            border-radius: 12px;
+        .panier-wrapper {
+            width: min(1100px, 88%);
+            margin: 0 auto;
         }
 
-        .panier-principal>* {
-            opacity: 1;
-        }
-
-        /* Total */
-        #cart-total {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        /* Grille des items */
-        .panier-items {
-            display: grid;
-            gap: 20px;
-            margin: 20px 10%;
-        }
-
-        /* Bulle (item) */
+        .panier-principal,
         .panier-item-grid {
-            background: black;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .panier-item-grid * {
-            color:white;
-            text-decoration: none;
+            background: rgba(20, 20, 20, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
-
-        .panier-item-grid:hover {
-            transform: scale(1.03);
+        .panier-principal {
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 24px;
+            color: white;
         }
 
-        /* Image */
-        .panier-item-grid img {
-            width: auto;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 10px;
+        .panier-principal h2 {
+            margin: 0 0 12px 0;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff7dc;
+            letter-spacing: 0.5px;
         }
 
-        /* Texte */
-        .panier-item-grid h3 {
-            margin: 10px 0 5px;
-        }
-
-        .panier-item-grid p {
-            margin: 5px 0;
-        }
-
-        /* Boutons */
-        .panier-item-grid form {
+        .resume-panier {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
             margin-top: 10px;
         }
 
-        .panier-item-grid input[type="submit"] {
-            padding: 5px 10px;
-            margin: 2px;
+        .total-panier {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffe08a;
+            text-shadow: 0 0 10px rgba(255, 208, 74, 0.15);
+        }
+
+        .actions-panier {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-panier {
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 0.98rem;
+            font-weight: 800;
             cursor: pointer;
-            background-color: white;
-            color: black;
+            transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
         }
-        .panier-item-grid input[type="submit"]:hover {
-            opacity: 0.8;
+
+        .btn-panier:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
         }
-        .panier-item-grid input[value="Supprimer du panier"] {
-            background-color: #dc3545;
+
+        .btn-acheter {
+            background: linear-gradient(135deg, #d4af37, #f6d365);
+            color: #2a1b00;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
+        }
+
+        .btn-vider {
+            background: linear-gradient(135deg, #b22222, #e63946);
+            color: white;
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.25);
+        }
+
+        .message-panier {
+            margin: 16px 0 0 0;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.98rem;
+        }
+
+        .message-panier.succes {
+            background: rgba(60, 160, 90, 0.22);
+            border: 1px solid rgba(90, 200, 120, 0.35);
+            color: #d8ffe0;
+        }
+
+        .message-panier.erreur {
+            background: rgba(180, 50, 50, 0.22);
+            border: 1px solid rgba(255, 90, 90, 0.35);
+            color: #ffd8d8;
+        }
+
+        .panier-items {
+            display: grid;
+            gap: 22px;
+        }
+
+        .panier-item-grid {
+            border-radius: 20px;
+            padding: 22px;
+            text-align: center;
+            color: white;
+        }
+
+        .panier-item-grid a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .panier-item-grid img {
+            width: auto;
+            max-width: 150px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 14px;
+            margin-bottom: 12px;
+        }
+
+        .panier-item-grid h3 {
+            margin: 8px 0 10px 0;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .panier-item-grid p {
+            margin: 6px 0;
+            font-size: 1.15rem;
+        }
+
+        .panier-item-grid .prix {
+            color: #ffe08a;
+            font-weight: 700;
+        }
+
+        .form-quantite {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .form-quantite label {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #f5f5f5;
+        }
+
+        .input-quantite {
+            width: 90px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .input-quantite::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .btn-maj {
+            background: rgba(255,255,255,0.14);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-supprimer {
+            background: linear-gradient(135deg, #b22222, #e63946);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .panier-vide {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 30px;
+            background: rgba(20, 20, 20, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
@@ -129,20 +273,82 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
 <body>
     <?php include_once 'template/header.php'; ?>
 
-
     <main>
-        <div class="panier-principal">
-            <h4>Panier</h4>
-            <div id="cart-total"></div>
-            <form method="post">
-                <input type="submit" name="action" value="Acheter">
-                <input type="submit" name="action" value="Vider panier">
-            </form>
-        </div>
-        <div class="panier-items">
-            <?php afficher_panier($pdo); ?>
+        <div class="panier-wrapper">
+
+            <div class="panier-principal">
+                <h2>Panier</h2>
+
+                <div class="resume-panier">
+                    <div class="total-panier">Total : <?php echo (int)$totalOr; ?> or</div>
+
+                    <form method="post" class="actions-panier">
+                        <input type="submit" name="action" value="Acheter" class="btn-panier btn-acheter">
+                        <input type="submit" name="action" value="Vider panier" class="btn-panier btn-vider">
+                    </form>
+                </div>
+
+                <?php if (isset($_SESSION['message_panier'])): ?>
+                    <div class="message-panier <?php echo $_SESSION['message_panier_success'] ? 'succes' : 'erreur'; ?>">
+                        <?php echo htmlspecialchars($_SESSION['message_panier']); ?>
+                    </div>
+                    <?php unset($_SESSION['message_panier'], $_SESSION['message_panier_success']); ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="panier-items">
+                <?php if (empty($articles_panier)): ?>
+                    <div class="panier-vide">
+                        Ton panier est vide.
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($articles_panier as $article): ?>
+                        <?php
+                        $info = obtenirArticle($pdo, $article['idItem']);
+                        if (!$info) continue;
+
+                        $idItem = (int)$article['idItem'];
+                        $nomItem = $info['nom'];
+                        $quantite = (int)$article['quantitePanier'];
+                        $prix = (int)$info['prix'];
+                        $image = $info['photo'];
+                        $prixTotal = $prix * $quantite;
+                        ?>
+                        <div class="panier-item-grid">
+                            <a href="details.php?id=<?php echo $idItem; ?>">
+                                <img src="<?php echo htmlspecialchars($image); ?>" alt="<?php echo htmlspecialchars($nomItem); ?>">
+                                <h3><?php echo htmlspecialchars($nomItem); ?></h3>
+                                <p class="prix">Prix unitaire : <?php echo $prix; ?> or</p>
+                                <p>Prix total : <?php echo $prixTotal; ?> or</p>
+                            </a>
+
+                            <form method="post" class="form-quantite">
+                                <input type="hidden" name="idItem" value="<?php echo $idItem; ?>">
+
+                                <label for="quantite_<?php echo $idItem; ?>">Quantité :</label>
+                                <input
+                                    id="quantite_<?php echo $idItem; ?>"
+                                    class="input-quantite"
+                                    type="number"
+                                    name="quantite"
+                                    min="0"
+                                    value="<?php echo $quantite; ?>"
+                                >
+
+                                <button type="submit" name="action" value="Modifier quantité" class="btn-maj">
+                                    Mettre à jour
+                                </button>
+
+                                <button type="submit" name="action" value="Supprimer du panier" class="btn-supprimer">
+                                    Supprimer du panier
+                                </button>
+                            </form>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
         </div>
     </main>
 </body>
-
 </html>
