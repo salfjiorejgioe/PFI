@@ -360,19 +360,26 @@ function acheter_panier($pdo)
         //vider panier
         vider_panier($pdo, $idJoueur);
 
-        $pdo->commit();
+$pdo->commit();
 
-        // update session
-        $_SESSION['user']['or'] = $nouveauGold;
-        $_SESSION['user']['argent'] = $nouveauArgent;
-        $_SESSION['user']['bronze'] = $nouveauBronze;
+// update session
+$_SESSION['user']['or'] = $nouveauGold;
+$_SESSION['user']['argent'] = $nouveauArgent;
+$_SESSION['user']['bronze'] = $nouveauBronze;
 
-        return true;
+return [
+    "success" => true,
+    "message" => "Achat réussi"
+];
 
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        return false;
-    }
+} catch (Exception $e) {
+    $pdo->rollBack();
+
+    return [
+        "success" => false,
+        "message" => $e->getMessage()
+    ];
+}
 }
 function supprimer_objet_du_panier($pdo, $idItem)
 {
@@ -396,7 +403,73 @@ function supprimer_objet_du_panier($pdo, $idItem)
         return false;
     }
 }
+function modifier_quantite_panier($pdo, $idItem, $quantite)
+{
+    if (!isset($_SESSION['user']['idJoueur'])) {
+        return [
+            "success" => false,
+            "message" => "Joueur non connecté"
+        ];
+    }
 
+    $idJoueur = $_SESSION['user']['idJoueur'];
+    $quantite = (int)$quantite;
+
+    if ($quantite < 0) {
+        return [
+            "success" => false,
+            "message" => "Quantité invalide"
+        ];
+    }
+
+    $info_item = obtenirArticle($pdo, $idItem);
+
+    if (!$info_item) {
+        return [
+            "success" => false,
+            "message" => "Article introuvable"
+        ];
+    }
+
+    if ($quantite == 0) {
+        $stmt = $pdo->prepare("
+            DELETE FROM Paniers
+            WHERE idJoueur = ? AND idItem = ?
+        ");
+        $stmt->execute([$idJoueur, $idItem]);
+
+        return [
+            "success" => true,
+            "message" => "Article retiré du panier"
+        ];
+    }
+
+    if ($info_item['estDisponible'] != 1) {
+        return [
+            "success" => false,
+            "message" => "Article indisponible"
+        ];
+    }
+
+    if ($quantite > (int)$info_item['quantiteStock']) {
+        return [
+            "success" => false,
+            "message" => "Stock insuffisant"
+        ];
+    }
+
+    $stmt = $pdo->prepare("
+        UPDATE Paniers
+        SET quantitePanier = ?
+        WHERE idJoueur = ? AND idItem = ?
+    ");
+    $stmt->execute([$quantite, $idJoueur, $idItem]);
+
+    return [
+        "success" => true,
+        "message" => "Quantité mise à jour"
+    ];
+}
 function vider_panier($pdo, $idJoueur)
 {
     $stmt = $pdo->prepare("
