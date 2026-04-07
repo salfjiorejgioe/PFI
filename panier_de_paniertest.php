@@ -104,7 +104,7 @@ function ajouter_objet_panier_nombre($pdo, $idItem, $nombre)////////////////////
 
     }
 }
-function ajouter_objet_panier($pdo, $idItem, $nombre = 1)
+function ajouter_objet_panier($pdo, $idItem) // ajouter nombre optionnel?
 { // ajoute +1 objet au panier selon l'id de l'item
     if (!isset($_SESSION['user']['idJoueur'])) {
         return false; // sécurité
