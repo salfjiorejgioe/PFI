@@ -12,22 +12,18 @@ if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
     exit;
 }
 
-$idJoueur = (int)$_SESSION['user']['idJoueur'];
+$idJoueur = (int) $_SESSION['user']['idJoueur'];
 $action = $_POST['action'] ?? '';
-$idItem = isset($_POST['idItem']) ? (int)$_POST['idItem'] : 0;
+$idItem = isset($_POST['idItem']) ? (int) $_POST['idItem'] : 0;
 
 try {
     if ($action === 'clear') {
         $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ?");
         $stmt->execute([$idJoueur]);
-    }
-
-    elseif ($action === 'remove' && $idItem > 0) {
+    } elseif ($action === 'remove' && $idItem > 0) {
         $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ? AND idItem = ?");
         $stmt->execute([$idJoueur, $idItem]);
-    }
-
-    elseif ($action === 'increase' && $idItem > 0) {
+    } elseif ($action === 'increase' && $idItem > 0) {
         // stock actuel
         $stmt = $pdo->prepare("
             SELECT p.quantitePanier, i.quantiteStock
@@ -40,9 +36,9 @@ try {
         $ligne = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($ligne) {
-            $nouvelleQuantite = (int)$ligne['quantitePanier'] + 1;
+            $nouvelleQuantite = (int) $ligne['quantitePanier'] + 1;
 
-            if ($nouvelleQuantite <= (int)$ligne['quantiteStock']) {
+            if ($nouvelleQuantite <= (int) $ligne['quantiteStock']) {
                 $stmt = $pdo->prepare("
                     UPDATE Paniers
                     SET quantitePanier = ?
@@ -57,9 +53,7 @@ try {
                 exit;
             }
         }
-    }
-
-    elseif ($action === 'decrease' && $idItem > 0) {
+    } elseif ($action === 'decrease' && $idItem > 0) {
         $stmt = $pdo->prepare("
             SELECT quantitePanier
             FROM Paniers
@@ -70,7 +64,7 @@ try {
         $ligne = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($ligne) {
-            $nouvelleQuantite = (int)$ligne['quantitePanier'] - 1;
+            $nouvelleQuantite = (int) $ligne['quantitePanier'] - 1;
 
             if ($nouvelleQuantite <= 0) {
                 $stmt = $pdo->prepare("DELETE FROM Paniers WHERE idJoueur = ? AND idItem = ?");
@@ -99,8 +93,8 @@ try {
 
     $total = 0;
     foreach ($itemsPanier as &$ligne) {
-        $ligne['prix'] = (int)$ligne['prix'];
-        $ligne['quantitePanier'] = (int)$ligne['quantitePanier'];
+        $ligne['prix'] = (int) $ligne['prix'];
+        $ligne['quantitePanier'] = (int) $ligne['quantitePanier'];
         $ligne['sousTotal'] = $ligne['prix'] * $ligne['quantitePanier'];
         $total += $ligne['sousTotal'];
     }

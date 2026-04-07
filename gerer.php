@@ -7,7 +7,7 @@ require_once 'helpers.php';
 if (
     !isset($_SESSION['user']) ||
     !isset($_SESSION['user']['estAdmin']) ||
-    (int)$_SESSION['user']['estAdmin'] !== 1
+    (int) $_SESSION['user']['estAdmin'] !== 1
 ) {
     header('Location: index.php');
     exit;
@@ -26,7 +26,7 @@ try {
     $error = "Erreur lors du chargement des items.";
 }
 
-$idItem = isset($_GET['idItem']) ? (int)$_GET['idItem'] : 0;
+$idItem = isset($_GET['idItem']) ? (int) $_GET['idItem'] : 0;
 
 // charger l'item choisi
 if ($idItem > 0) {
@@ -78,11 +78,11 @@ if ($idItem > 0) {
 
 // mise à jour
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
-    $idItemPost = (int)($_POST['idItem'] ?? 0);
+    $idItemPost = (int) ($_POST['idItem'] ?? 0);
 
     $nom = trim($_POST['nom'] ?? '');
-    $prix = (int)($_POST['prix'] ?? 0);
-    $quantiteStock = (int)($_POST['quantiteStock'] ?? 0);
+    $prix = (int) ($_POST['prix'] ?? 0);
+    $quantiteStock = (int) ($_POST['quantiteStock'] ?? 0);
     $photo = trim($_POST['photo'] ?? '');
     $estDisponible = isset($_POST['estDisponible']) ? 1 : 0;
     $typeItem = $_POST['typeItem'] ?? '';
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
             // potion
             if ($typeItem === 'P') {
                 $effet = trim($_POST['effet'] ?? '');
-                $duree = (int)($_POST['duree'] ?? 0);
+                $duree = (int) ($_POST['duree'] ?? 0);
 
                 $stmt = $pdo->prepare("
                     UPDATE Potions
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
 
             // sort
             if ($typeItem === 'S') {
-                $rarete = (int)($_POST['rarete'] ?? 0);
+                $rarete = (int) ($_POST['rarete'] ?? 0);
                 $typeSort = trim($_POST['typeSort'] ?? '');
                 $estInstantane = isset($_POST['estInstantane']) ? 1 : 0;
 
@@ -198,119 +198,122 @@ if (isset($_GET['ok'])) {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Gérer un item</title>
     <link rel="stylesheet" href="public/css/style.css">
 </head>
+
 <body>
 
-<?php include_once "template/header.php"; ?>
+    <?php include_once "template/header.php"; ?>
 
-<main class="admin-container">
-    <div class="admin-card">
-        <h1>Gérer un item</h1>
-
-        <?php if ($message != ""): ?>
-            <p class="msg-success"><?php echo h($message); ?></p>
-        <?php endif; ?>
-
-        <?php if ($error != ""): ?>
-            <p class="msg-error"><?php echo h($error); ?></p>
-        <?php endif; ?>
-
-        <!-- dropdown -->
-        <form method="get" class="admin-form">
-            <label for="idItem">Choisir un item</label>
-            <select name="idItem" id="idItem" onchange="this.form.submit()">
-                <option value="">-- Sélectionner un item --</option>
-                <?php foreach ($items as $item): ?>
-                    <option value="<?php echo (int)$item['idItem']; ?>"
-                        <?php echo ($idItem === (int)$item['idItem']) ? 'selected' : ''; ?>>
-                        <?php echo h($item['nom']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </form>
-    </div>
-
-    <?php if ($itemChoisi): ?>
+    <main class="admin-container">
         <div class="admin-card">
-            <h2>Modifier : <?php echo h($itemChoisi['nom']); ?></h2>
+            <h1>Gérer un item</h1>
 
-            <form method="post" class="admin-form">
-                <input type="hidden" name="modifier_item" value="1">
-                <input type="hidden" name="idItem" value="<?php echo (int)$itemChoisi['idItem']; ?>">
-                <input type="hidden" name="typeItem" value="<?php echo h($itemChoisi['typeItem']); ?>">
+            <?php if ($message != ""): ?>
+                <p class="msg-success"><?php echo h($message); ?></p>
+            <?php endif; ?>
 
-                <label>Nom</label>
-                <input type="text" name="nom" value="<?php echo h($itemChoisi['nom']); ?>" required>
+            <?php if ($error != ""): ?>
+                <p class="msg-error"><?php echo h($error); ?></p>
+            <?php endif; ?>
 
-                <label>Prix</label>
-                <input type="number" name="prix" value="<?php echo (int)$itemChoisi['prix']; ?>" min="0" required>
-
-                <label>Stock</label>
-                <input type="number" name="quantiteStock" value="<?php echo (int)$itemChoisi['quantiteStock']; ?>" min="0" required>
-
-                <label>Image</label>
-                <input type="text" name="photo" value="<?php echo h($itemChoisi['photo']); ?>">
-
-                <label class="admin-check">
-                    <input type="checkbox" name="estDisponible" <?php echo ((int)$itemChoisi['estDisponible'] === 1) ? 'checked' : ''; ?>>
-                    Disponible
-                </label>
-
-                <?php if ($itemChoisi['typeItem'] === 'A'): ?>
-                    <h3>Infos Arme</h3>
-                    <label>Description</label>
-                    <input type="text" name="description" value="<?php echo h($itemChoisi['description']); ?>">
-
-                    <label>Efficacité</label>
-                    <input type="text" name="efficacite" value="<?php echo h($itemChoisi['efficacite']); ?>">
-
-                    <label>Genre</label>
-                    <input type="text" name="genre" value="<?php echo h($itemChoisi['genre']); ?>">
-                <?php endif; ?>
-
-                <?php if ($itemChoisi['typeItem'] === 'P'): ?>
-                    <h3>Infos Potion</h3>
-                    <label>Effet</label>
-                    <input type="text" name="effet" value="<?php echo h($itemChoisi['effet']); ?>">
-
-                    <label>Durée</label>
-                    <input type="number" name="duree" value="<?php echo (int)$itemChoisi['duree']; ?>" min="0">
-                <?php endif; ?>
-
-                <?php if ($itemChoisi['typeItem'] === 'R'): ?>
-                    <h3>Infos Armure</h3>
-                    <label>Matière</label>
-                    <input type="text" name="matiere" value="<?php echo h($itemChoisi['matiere']); ?>">
-
-                    <label>Taille</label>
-                    <input type="text" name="taille" value="<?php echo h($itemChoisi['taille']); ?>">
-                <?php endif; ?>
-
-                <?php if ($itemChoisi['typeItem'] === 'S'): ?>
-                    <h3>Infos Sort</h3>
-                    <label>Rareté</label>
-                    <input type="number" name="rarete" value="<?php echo (int)$itemChoisi['rarete']; ?>" min="0">
-
-                    <label>Type sort</label>
-                    <input type="text" name="typeSort" value="<?php echo h($itemChoisi['typeSort']); ?>">
-
-                    <label class="admin-check">
-                        <input type="checkbox" name="estInstantane" <?php echo ((int)$itemChoisi['estInstantane'] === 1) ? 'checked' : ''; ?>>
-                        Instantané
-                    </label>
-                <?php endif; ?>
-
-                <button type="submit">Enregistrer les modifications</button>
+            <!-- dropdown -->
+            <form method="get" class="admin-form">
+                <label for="idItem">Choisir un item</label>
+                <select name="idItem" id="idItem" onchange="this.form.submit()">
+                    <option value="">-- Sélectionner un item --</option>
+                    <?php foreach ($items as $item): ?>
+                        <option value="<?php echo (int) $item['idItem']; ?>" <?php echo ($idItem === (int) $item['idItem']) ? 'selected' : ''; ?>>
+                            <?php echo h($item['nom']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </form>
         </div>
-    <?php endif; ?>
-</main>
 
-<?php include_once "template/footer.php"; ?>
+        <?php if ($itemChoisi): ?>
+            <div class="admin-card">
+                <h2>Modifier : <?php echo h($itemChoisi['nom']); ?></h2>
+
+                <form method="post" class="admin-form">
+                    <input type="hidden" name="modifier_item" value="1">
+                    <input type="hidden" name="idItem" value="<?php echo (int) $itemChoisi['idItem']; ?>">
+                    <input type="hidden" name="typeItem" value="<?php echo h($itemChoisi['typeItem']); ?>">
+
+                    <label>Nom</label>
+                    <input type="text" name="nom" value="<?php echo h($itemChoisi['nom']); ?>" required>
+
+                    <label>Prix</label>
+                    <input type="number" name="prix" value="<?php echo (int) $itemChoisi['prix']; ?>" min="0" required>
+
+                    <label>Stock</label>
+                    <input type="number" name="quantiteStock" value="<?php echo (int) $itemChoisi['quantiteStock']; ?>"
+                        min="0" required>
+
+                    <label>Image</label>
+                    <input type="text" name="photo" value="<?php echo h($itemChoisi['photo']); ?>">
+
+                    <label class="admin-check">
+                        <input type="checkbox" name="estDisponible" <?php echo ((int) $itemChoisi['estDisponible'] === 1) ? 'checked' : ''; ?>>
+                        Disponible
+                    </label>
+
+                    <?php if ($itemChoisi['typeItem'] === 'A'): ?>
+                        <h3>Infos Arme</h3>
+                        <label>Description</label>
+                        <input type="text" name="description" value="<?php echo h($itemChoisi['description']); ?>">
+
+                        <label>Efficacité</label>
+                        <input type="text" name="efficacite" value="<?php echo h($itemChoisi['efficacite']); ?>">
+
+                        <label>Genre</label>
+                        <input type="text" name="genre" value="<?php echo h($itemChoisi['genre']); ?>">
+                    <?php endif; ?>
+
+                    <?php if ($itemChoisi['typeItem'] === 'P'): ?>
+                        <h3>Infos Potion</h3>
+                        <label>Effet</label>
+                        <input type="text" name="effet" value="<?php echo h($itemChoisi['effet']); ?>">
+
+                        <label>Durée</label>
+                        <input type="number" name="duree" value="<?php echo (int) $itemChoisi['duree']; ?>" min="0">
+                    <?php endif; ?>
+
+                    <?php if ($itemChoisi['typeItem'] === 'R'): ?>
+                        <h3>Infos Armure</h3>
+                        <label>Matière</label>
+                        <input type="text" name="matiere" value="<?php echo h($itemChoisi['matiere']); ?>">
+
+                        <label>Taille</label>
+                        <input type="text" name="taille" value="<?php echo h($itemChoisi['taille']); ?>">
+                    <?php endif; ?>
+
+                    <?php if ($itemChoisi['typeItem'] === 'S'): ?>
+                        <h3>Infos Sort</h3>
+                        <label>Rareté</label>
+                        <input type="number" name="rarete" value="<?php echo (int) $itemChoisi['rarete']; ?>" min="0">
+
+                        <label>Type sort</label>
+                        <input type="text" name="typeSort" value="<?php echo h($itemChoisi['typeSort']); ?>">
+
+                        <label class="admin-check">
+                            <input type="checkbox" name="estInstantane" <?php echo ((int) $itemChoisi['estInstantane'] === 1) ? 'checked' : ''; ?>>
+                            Instantané
+                        </label>
+                    <?php endif; ?>
+
+                    <button type="submit">Enregistrer les modifications</button>
+                </form>
+            </div>
+        <?php endif; ?>
+    </main>
+
+    <?php include_once "template/footer.php"; ?>
 
 </body>
+
 </html>

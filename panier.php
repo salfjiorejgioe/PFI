@@ -112,14 +112,21 @@ try {
         // Réduire le stock
         $nouveauStock = $stockActuel - $qte;
 
-       
+        if ($nouveauStock <= 0) {
+            $stmt = $pdo->prepare("
+            UPDATE Items
+            SET quantiteStock = 0, estDisponible = 0
+            WHERE idItem = ?
+        ");
+            $stmt->execute([$idItem]);
+        } else {
             $stmt = $pdo->prepare("
             UPDATE Items
             SET quantiteStock = ?
             WHERE idItem = ?
         ");
             $stmt->execute([$nouveauStock, $idItem]);
-        
+        }
     }
 
 
