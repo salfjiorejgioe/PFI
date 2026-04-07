@@ -248,7 +248,7 @@ function acheter_panier($pdo)
         $total = 0;
 
         foreach ($panier as $item) {
-            if ($item['typeItem'] == 'sort' && $_SESSION['user']['estMage'] != 1) {
+            if ($item['typeItem'] == 'S' && $_SESSION['user']['estMage'] != 1) {
                 throw new Exception("Seuls les mages peuvent acheter des sorts");
 
             }
