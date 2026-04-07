@@ -71,9 +71,10 @@ foreach ($itemsInventaire as $item) {
 <body>
 <?php include_once 'template/header.php'; ?>
 
+
 <main>
+   <h1>Mon inventaire</h1>
   <section id="filtres">
-    <h1>Mon inventaire</h1>
     <!-- même id et mêmes values que dans index.php -->
     <input id="barreRecherche" type="text" placeholder="Rechercher...">
     <label><input type="checkbox" value="potions"> Potions</label>
@@ -243,6 +244,7 @@ foreach ($itemsInventaire as $item) {
     appliquerFiltres();
   });
 </script>
+<?php include_once 'template/footer.php'; ?>
 
 </body>
 </html>

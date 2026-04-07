@@ -267,6 +267,53 @@ foreach ($articles_panier as $article) {
             border-radius: 18px;
             backdrop-filter: blur(8px);
         }
+
+        .cart-btn {
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: #fff;
+            margin: 0 8px;
+            flex: 1;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .cart-btn.acheter {
+            background: linear-gradient(135deg, #f6d26a, #f59e0b);
+            box-shadow: 0 6px 20px rgba(246, 210, 106, 0.4);
+        }
+
+        .cart-btn.acheter:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 8px 24px rgba(246, 210, 106, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .cart-btn.vider {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .cart-btn.vider:hover {
+            background: linear-gradient(135deg, #b91c1c, #991b1b);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .panier-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -350,5 +397,7 @@ foreach ($articles_panier as $article) {
 
         </div>
     </main>
+
+    <?php include_once 'template/footer.php'; ?>
 </body>
 </html>

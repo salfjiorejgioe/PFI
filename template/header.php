@@ -1,10 +1,4 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-
-
 $user = $_SESSION['user'] ?? null;
 ?>
 <header>
@@ -28,7 +22,7 @@ $user = $_SESSION['user'] ?? null;
 
           <div class="user-wallet">
             <div class="wallet-item gold">
-              <span class="wallet-emoji">🪙</span>
+              <span class="wallet-emoji">🥇</span>
               <span class="wallet-label">Gold</span>
               <span class="wallet-value"><?php echo (int)$user['or']; ?></span>
             </div>

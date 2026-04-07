@@ -61,7 +61,50 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
         return [];
     }
 }
-function ajouter_objet_panier($pdo, $idItem)
+function ajouter_objet_panier_nombre($pdo, $idItem, $nombre)/////////////////////////////////////////////////////////////
+{ // ajoute +1 objet au panier selon l'id de l'item
+    if (!isset($_SESSION['user']['idJoueur'])) {
+        return false; // sécurité
+    }
+    $joueur_id = $_SESSION['user']['idJoueur'];
+
+    $info_item = obtenirArticle($pdo, $idItem);
+
+    if (!$info_item || $info_item["estDisponible"] != 1 || $info_item['quantiteStock'] <= 0) { //item non-disponible. Impossible d'ajouter
+        //echo "<script>alert('Ajout d'item impossible');</script>";
+        return false;
+    }
+    $sql = "SELECT quantitePanier
+            FROM Paniers 
+            WHERE idJoueur = ? AND idItem = ?";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$joueur_id, $idItem]);
+    $item = $stmt->fetch();
+
+    try {
+        if ($item) {
+            $sql = "UPDATE Paniers
+                    SET quantitePanier = quantitePanier + $nombre
+                    WHERE idJoueur = ? AND idItem = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$joueur_id, $idItem, $nombre]);
+
+        } else {
+            $sql = "INSERT INTO Paniers 
+                    (idJoueur, idItem, quantitePanier)
+                    VALUES (?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$joueur_id, $idItem, $nombre]);
+        }
+
+        return true;
+
+    } catch (Exception $e) {
+
+    }
+}
+function ajouter_objet_panier($pdo, $idItem) // ajouter nombre optionnel?
 { // ajoute +1 objet au panier selon l'id de l'item
     if (!isset($_SESSION['user']['idJoueur'])) {
         return false; // sécurité
@@ -207,6 +250,7 @@ function acheter_panier($pdo)
         foreach ($panier as $item) {
             if ($item['typeItem'] == 'S' && $_SESSION['user']['estMage'] != 1) {
                 throw new Exception("Seuls les mages peuvent acheter des sorts");
+
             }
             $prix = (int) $item['prix'];
             $quantite = (int) $item['quantitePanier'];
@@ -447,7 +491,7 @@ function afficher_panier($pdo)
         $prixTotalOr += $info_article["prix"] * $articles["quantitePanier"];
     }
 
-    echo "<h4>Total: $prixTotalOr or</h4>";
+    echo "<h3>Total: $prixTotalOr or</h3>";
     // question: en permanence vérifier si l'item est toujours disponible?
     foreach ($articles_panier as $articles) {
         $info_article = obtenirArticle($pdo, $articles['idItem']);
@@ -461,18 +505,24 @@ function afficher_panier($pdo)
         $prixtotal = $prix * $quantite;
 
         // faire en sorte d'avoir des boutons qui appellent les fonctions ajouter/retirer en passant l'id de l'item quand appuyés
+        // ajouter input number qui:
+        // - submit le form et refresh page quand stopped typing (javascript) (php input number submit form auto when stopped typing)
+        // - update shown number depending 
+        //          - (default number) placeholder = 0
+        //          
         echo '
     <div class="panier-item-grid">
         <a class="" href="details.php?id=' . $idItem . '">
             <img src="' . $image . '">
             <h3>' . $nomItem . '</h3>
             <p>Prix unitaire: ' . $prix . ' or</p>
-            <p>Quantité ' . $quantite . '</p>
+            <p>Quantité: ' . $quantite . '</p>
             <p>Prix total: ' . $prixtotal . ' or</p>
         </a>
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
             <input type="submit" name="action" value="Ajouter"/> 
+            
             <input type="submit" name="action" value="Retirer"/>
             <input type="submit" name="action" value="Supprimer du panier"/>
         </form>

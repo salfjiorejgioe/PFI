@@ -13,7 +13,7 @@ try {
     $sql = "SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
             FROM Items
             WHERE estDisponible = 1
-            ORDER BY typeItem, nom";
+            ORDER BY typeItem, prix ASC";
 
     $stmt = $pdo->query($sql);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
