@@ -3,10 +3,11 @@ session_start();
 require_once 'db.php';
 
 // Vérifier si l'utilisateur est admin
-if (!isset($_SESSION['user']) || !isset($_SESSION['user']['estAdmin']) || (int)$_SESSION['user']['estAdmin'] !== 1) {
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['estAdmin']) || (int) $_SESSION['user']['estAdmin'] !== 1) {
     header('Location: index.php');
     exit;
 }
+
 $message = "";
 $error = "";
 
@@ -16,9 +17,36 @@ function h($texte)
     return htmlspecialchars($texte, ENT_QUOTES, 'UTF-8');
 }
 
+/* =========================
+   AJOUTER LES CATÉGORIES DE BASE
+========================= */
+try {
+    $categoriesBase = [
+        ['C', 'Le chaos qui englobe le monde'],
+        ['A', 'Les aventures dans le royaume Darquest'],
+        ['J', 'Jew 🥸'],
+        ['D', 'Les Dragons'],
+        ['E', 'Les Elements'],
+        ['V', 'Le vide'],
+        ['W', 'Les armes']
+    ];
 
-// ajouter un item
+    $stmtInsertCategorie = $pdo->prepare("
+        INSERT IGNORE INTO Categories (idCategorie, nomCategorie)
+        VALUES (?, ?)
+    ");
 
+    foreach ($categoriesBase as $cat) {
+        $stmtInsertCategorie->execute([$cat[0], $cat[1]]);
+    }
+} catch (PDOException $e) {
+    $error = "Erreur lors de l'initialisation des catégories : " . $e->getMessage();
+}
+
+
+/* =========================
+   AJOUTER UN ITEM
+========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_item') {
 
     $nom = trim($_POST['nom']);
@@ -28,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $typeItem = $_POST['typeItem'];
     $estDisponible = isset($_POST['estDisponible']) ? 1 : 0;
 
-    // Validations simples
     if ($nom == "") {
         $error = "Le nom est obligatoire.";
     } elseif ($quantiteStock < 0 || $prix < 0) {
@@ -39,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $pdo->beginTransaction();
 
-            // Ajouter dans Items
             $sqlItem = "INSERT INTO Items (nom, quantiteStock, prix, photo, typeItem, estDisponible)
                         VALUES (?, ?, ?, ?, ?, ?)";
             $stmtItem = $pdo->prepare($sqlItem);
@@ -54,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             $idItem = $pdo->lastInsertId();
 
-            // Si c'est une arme
             if ($typeItem == 'A') {
                 $description = trim($_POST['arme_description']);
                 $genre = trim($_POST['arme_genre']);
@@ -66,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmtArme->execute([$idItem, $efficacite, $genre, $description]);
             }
 
-            // Si c'est une armure
             if ($typeItem == 'R') {
                 $matiere = trim($_POST['armure_matiere']);
                 $taille = trim($_POST['armure_taille']);
@@ -77,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmtArmure->execute([$idItem, $matiere, $taille]);
             }
 
-            // Si c'est une potion
             if ($typeItem == 'P') {
                 $effet = trim($_POST['potion_effet']);
                 $duree = (int) $_POST['potion_duree'];
@@ -88,16 +111,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmtPotion->execute([$idItem, $effet, $duree]);
             }
 
-            // Si c'est un sort
             if ($typeItem == 'S') {
                 $typeSort = $_POST['sort_typeSort'];
                 $estInstantane = $_POST['sort_estInstantane'];
-                $retirePV = (int) $_POST['sort_retirePV'];
+                $rarete = (int) $_POST['sort_retirePV'];
 
                 $sqlSort = "INSERT INTO Sorts (idItem, estInstantane, rarete, typeSort)
                             VALUES (?, ?, ?, ?)";
                 $stmtSort = $pdo->prepare($sqlSort);
-                $stmtSort->execute([$idItem, $estInstantane, $retirePV, $typeSort]);
+                $stmtSort->execute([$idItem, $estInstantane, $rarete, $typeSort]);
             }
 
             $pdo->commit();
@@ -110,77 +132,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// rendre indisponible un item
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'disable_item') {
-    $idItem = (int) $_POST['idItem'];
+/* =========================
+   AJOUTER UNE ÉNIGME / QUÊTE
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_enigme') {
 
-    if ($idItem > 0) {
-        try {
-            $sql = "UPDATE Items SET estDisponible = 0 WHERE idItem = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$idItem]);
-            $message = "Item retiré de la vente avec succès.";
-        } catch (PDOException $e) {
-            $error = "Erreur lors de la désactivation : " . $e->getMessage();
-        }
-    }
-}
+    $enonce = trim($_POST['enonce']);
+    $idCategorie = trim($_POST['idCategorie']);
+    $difficulte = trim($_POST['difficulte']);
+    $estPigee = isset($_POST['estPigee']) ? 1 : 0;
+    $recompense = (int) $_POST['recompense'];
+    $punition = (int) $_POST['punition'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
-    $idItem = (int) $_POST['idItem'];
+    $reponse1 = trim($_POST['reponse1']);
+    $reponse2 = trim($_POST['reponse2']);
+    $reponse3 = trim($_POST['reponse3']);
+    $reponse4 = trim($_POST['reponse4']);
+    $bonneReponse = $_POST['bonneReponse'];
 
-    if ($idItem > 0) {
+    if (
+        $enonce == "" ||
+        $idCategorie == "" ||
+        $difficulte == "" ||
+        $reponse1 == "" ||
+        $reponse2 == "" ||
+        $reponse3 == "" ||
+        $reponse4 == "" ||
+        $bonneReponse == ""
+    ) {
+        $error = "Tous les champs de l'énigme doivent être remplis.";
+    } else {
         try {
             $pdo->beginTransaction();
 
-            // Supprimer dans tables liées (IMPORTANT)
-            $pdo->prepare("DELETE FROM Armes WHERE idItem = ?")->execute([$idItem]);
-            $pdo->prepare("DELETE FROM Armures WHERE idItem = ?")->execute([$idItem]);
-            $pdo->prepare("DELETE FROM Potions WHERE idItem = ?")->execute([$idItem]);
-            $pdo->prepare("DELETE FROM Sorts WHERE idItem = ?")->execute([$idItem]);
+            $sqlEnigme = "INSERT INTO Enigmes (enonce, idCategorie, difficulte, estPigee, Recompense, Punition)
+VALUES (?, ?, ?, ?, ?, ?)";
+            $stmtEnigme = $pdo->prepare($sqlEnigme);
+           $stmtEnigme->execute([$enonce, $idCategorie, $difficulte, $estPigee, $recompense, $punition]);
 
-            // Supprimer dans Items
-            $pdo->prepare("DELETE FROM Items WHERE idItem = ?")->execute([$idItem]);
+            $idEnigme = $pdo->lastInsertId();
+
+            $reponses = [
+                1 => $reponse1,
+                2 => $reponse2,
+                3 => $reponse3,
+                4 => $reponse4
+            ];
+
+            $sqlReponse = "INSERT INTO Reponses (estBonneReponse, reponse, idEnigme)
+                           VALUES (?, ?, ?)";
+            $stmtReponse = $pdo->prepare($sqlReponse);
+
+            foreach ($reponses as $numero => $texteReponse) {
+                $estBonne = ($bonneReponse == $numero) ? 1 : 0;
+                $stmtReponse->execute([$estBonne, $texteReponse, $idEnigme]);
+            }
 
             $pdo->commit();
-            $message = "Item supprimé définitivement.";
+            $message = "Énigme ajoutée avec succès.";
+
         } catch (PDOException $e) {
             $pdo->rollBack();
-            $error = "Erreur suppression : " . $e->getMessage();
+            $error = "Erreur lors de l'ajout de l'énigme : " . $e->getMessage();
         }
     }
 }
 
 
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'enable_item') {
-    $idItem = (int) $_POST['idItem'];
-
-    if ($idItem > 0) {
-        try {
-            $sql = "UPDATE Items SET estDisponible = 1 WHERE idItem = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$idItem]);
-            $message = "Item remis en vente avec succès.";
-        } catch (PDOException $e) {
-            $error = "Erreur lors de la réactivation : " . $e->getMessage();
-        }
-    }
-}
-
-
-// charger les items pour les afficher dans la table
-
+/* =========================
+   CHARGER LES CATÉGORIES
+========================= */
 try {
-    $sql = "SELECT idItem, nom, quantiteStock, prix, photo, typeItem, estDisponible
-            FROM Items
-            ORDER BY idItem DESC";
-    $stmt = $pdo->query($sql);
-    $items = $stmt->fetchAll();
+    $sqlCategories = "SELECT idCategorie, nomCategorie FROM Categories ORDER BY nomCategorie";
+    $stmtCategories = $pdo->query($sqlCategories);
+    $categories = $stmtCategories->fetchAll();
 } catch (PDOException $e) {
-    $items = [];
-    $error = "Erreur lors du chargement des items : " . $e->getMessage();
+    $categories = [];
+    $error = "Erreur lors du chargement des catégories : " . $e->getMessage();
 }
 ?>
 
@@ -190,17 +219,18 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Gestion des items</title>
+    <title>Admin - Gestion des items et énigmes</title>
     <link rel="stylesheet" href="public/css/style.css">
 </head>
 
 <body>
     <?php include_once 'template/header.php'; ?>
+
     <div class="admin-container">
 
         <div class="admin-card">
             <h1 class="admin-title">Panneau Admin</h1>
-            <p>Gestion des items du Marché Mystique</p>
+            <p>Gestion des items du Marché Mystique et ajout des quêtes</p>
         </div>
 
         <?php if ($message != ""): ?>
@@ -282,71 +312,53 @@ try {
         </div>
 
         <div class="admin-card">
-            <h2>Liste des items</h2>
+            <h2>Ajouter une quête / énigme</h2>
 
-            <?php if (empty($items)): ?>
-                <p>Aucun item trouvé.</p>
-            <?php else: ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th>Nom</th>
-                            <th>Type</th>
-                            <th>Stock</th>
-                            <th>Prix</th>
-                            <th>Disponible</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($items as $item): ?>
-                            <tr>
-                                <td><?= $item['idItem'] ?></td>
-                                <td>
-                                    <?php if (!empty($item['photo'])): ?>
-                                        <img class="item-thumb" src="<?= h($item['photo']) ?>" alt="<?= h($item['nom']) ?>">
-                                    <?php else: ?>
-                                        —
-                                    <?php endif; ?>
-                                </td>
-                                <td><?= h($item['nom']) ?></td>
-                                <td><?= h($item['typeItem']) ?></td>
-                                <td><?= $item['quantiteStock'] ?></td>
-                                <td><?= $item['prix'] ?></td>
-                                <td>
-                                    <?= $item['estDisponible'] == 1 ? 'Oui' : 'Non' ?>
-                                <td style="display:flex; gap:6px;">
+            <form method="post" class="admin-form">
+                <input type="hidden" name="action" value="add_enigme">
 
-                                    <!-- ❌ SUPPRIMER -->
-                                    <form method="post" onsubmit="return confirm('Supprimer définitivement cet item ?');">
-                                        <input type="hidden" name="action" value="delete_item">
-                                        <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
-                                        <button type="submit" class="btn-delete">✖</button>
-                                    </form>
+                <textarea name="enonce" placeholder="Énoncé de l'énigme" required></textarea>
 
-                                    <!-- 🔁 DISPONIBILITÉ -->
-                                    <?php if ($item['estDisponible'] == 1): ?>
-                                        <form method="post">
-                                            <input type="hidden" name="action" value="disable_item">
-                                            <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
-                                            <button type="submit" class="btn-disable">Retirer</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="post">
-                                            <input type="hidden" name="action" value="enable_item">
-                                            <input type="hidden" name="idItem" value="<?= $item['idItem'] ?>">
-                                            <button type="submit" class="btn-enable">Remettre</button>
-                                        </form>
-                                    <?php endif; ?>
+                <select name="idCategorie" required>
+                    <option value="">Choisir une catégorie</option>
+                    <?php foreach ($categories as $categorie): ?>
+                        <option value="<?= h($categorie['idCategorie']) ?>">
+                            <?= h($categorie['idCategorie'] . ' - ' . $categorie['nomCategorie']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+                <select name="difficulte" required>
+                    <option value="">Choisir une difficulté</option>
+                    <option value="F">Facile</option>
+                    <option value="M">Moyen</option>
+                    <option value="D">Difficile</option>
+                </select>
+
+                <label class="admin-check">
+                    <input type="checkbox" name="estPigee">
+                    Déjà pigée
+                </label>
+
+                <input type="text" name="reponse1" placeholder="Réponse 1" required>
+                <input type="text" name="reponse2" placeholder="Réponse 2" required>
+                <input type="text" name="reponse3" placeholder="Réponse 3" required>
+                <input type="text" name="reponse4" placeholder="Réponse 4" required>
+
+                <select name="bonneReponse" required>
+                    <option value="">Choisir la bonne réponse</option>
+                    <option value="1">Réponse 1</option>
+                    <option value="2">Réponse 2</option>
+                    <option value="3">Réponse 3</option>
+                    <option value="4">Réponse 4</option>
+                </select>
+
+                <input type="number" name="recompense" placeholder="Récompense (or gagné)" min="0" value="50" required>
+
+                <input type="number" name="punition" placeholder="Punition (dégâts)" min="0" value="1" required>
+
+                <button type="submit">Ajouter l'énigme</button>
+            </form>
         </div>
     </div>
 

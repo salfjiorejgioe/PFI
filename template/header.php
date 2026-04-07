@@ -60,7 +60,7 @@ $user = $_SESSION['user'] ?? null;
       <li><a href="index.php">Accueil</a></li>
       <li><a href="inventaire.php">Inventaire</a></li>
       <li><a href="#">Vendre</a></li>
-      <li><a href="#">Enigma</a></li>
+      <li><a href="enigme.php">Enigma</a></li>
       <li><a href="#">Profil</a></li>
       <li><a href="paniertest.php">Panier</a></li>
       <?php if (!empty($user) && !empty($user['estAdmin']) && (int)$user['estAdmin'] === 1): ?>
