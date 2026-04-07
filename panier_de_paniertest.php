@@ -432,6 +432,11 @@ function afficher_panier($pdo)
         $prixtotal = $prix * $quantite;
 
         // faire en sorte d'avoir des boutons qui appellent les fonctions ajouter/retirer en passant l'id de l'item quand appuyés
+        // ajouter input number qui:
+        // - submit le form et refresh page quand stopped typing (javascript) (php input number submit form auto when stopped typing)
+        // - update shown number depending 
+        //          - (default number) placeholder = 0
+        //          
         echo '
     <div class="panier-item-grid">
         <a class="" href="details.php?id=' . $idItem . '">
@@ -444,6 +449,7 @@ function afficher_panier($pdo)
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
             <input type="submit" name="action" value="Ajouter"/> 
+            
             <input type="submit" name="action" value="Retirer"/>
             <input type="submit" name="action" value="Supprimer du panier"/>
         </form>
