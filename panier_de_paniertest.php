@@ -61,7 +61,50 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
         return [];
     }
 }
-function ajouter_objet_panier($pdo, $idItem)
+function ajouter_objet_panier_nombre($pdo, $idItem, $nombre)/////////////////////////////////////////////////////////////
+{ // ajoute +1 objet au panier selon l'id de l'item
+    if (!isset($_SESSION['user']['idJoueur'])) {
+        return false; // sécurité
+    }
+    $joueur_id = $_SESSION['user']['idJoueur'];
+
+    $info_item = obtenirArticle($pdo, $idItem);
+
+    if (!$info_item || $info_item["estDisponible"] != 1 || $info_item['quantiteStock'] <= 0) { //item non-disponible. Impossible d'ajouter
+        //echo "<script>alert('Ajout d'item impossible');</script>";
+        return false;
+    }
+    $sql = "SELECT quantitePanier
+            FROM Paniers 
+            WHERE idJoueur = ? AND idItem = ?";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$joueur_id, $idItem]);
+    $item = $stmt->fetch();
+
+    try {
+        if ($item) {
+            $sql = "UPDATE Paniers
+                    SET quantitePanier = quantitePanier + $nombre
+                    WHERE idJoueur = ? AND idItem = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$joueur_id, $idItem, $nombre]);
+
+        } else {
+            $sql = "INSERT INTO Paniers 
+                    (idJoueur, idItem, quantitePanier)
+                    VALUES (?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$joueur_id, $idItem, $nombre]);
+        }
+
+        return true;
+
+    } catch (Exception $e) {
+
+    }
+}
+function ajouter_objet_panier($pdo, $idItem, $nombre = 1)
 { // ajoute +1 objet au panier selon l'id de l'item
     if (!isset($_SESSION['user']['idJoueur'])) {
         return false; // sécurité
@@ -207,6 +250,7 @@ function acheter_panier($pdo)
         foreach ($panier as $item) {
             if ($item['typeItem'] == 'sort' && $_SESSION['user']['estMage'] != 1) {
                 throw new Exception("Seuls les mages peuvent acheter des sorts");
+
             }
             $prix = (int) $item['prix'];
             $quantite = (int) $item['quantitePanier'];
@@ -327,7 +371,7 @@ function acheter_panier($pdo)
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        return $e->getMessage();
+        return false;
     }
 }
 function supprimer_objet_du_panier($pdo, $idItem)
