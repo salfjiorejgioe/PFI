@@ -142,8 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $idCategorie = trim($_POST['idCategorie']);
     $difficulte = trim($_POST['difficulte']);
     $estPigee = isset($_POST['estPigee']) ? 1 : 0;
-    $recompense = (int) $_POST['recompense'];
-    $punition = (int) $_POST['punition'];
+
 
     $reponse1 = trim($_POST['reponse1']);
     $reponse2 = trim($_POST['reponse2']);
@@ -166,10 +165,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $pdo->beginTransaction();
 
-            $sqlEnigme = "INSERT INTO Enigmes (enonce, idCategorie, difficulte, estPigee, Recompense, Punition)
-VALUES (?, ?, ?, ?, ?, ?)";
+            $sqlEnigme = "INSERT INTO Enigmes (enonce, idCategorie, difficulte, estPigee)
+VALUES (?, ?, ?, ?)";
             $stmtEnigme = $pdo->prepare($sqlEnigme);
-           $stmtEnigme->execute([$enonce, $idCategorie, $difficulte, $estPigee, $recompense, $punition]);
+           $stmtEnigme->execute([$enonce, $idCategorie, $difficulte, $estPigee]);
 
             $idEnigme = $pdo->lastInsertId();
 
@@ -352,10 +351,6 @@ try {
                     <option value="3">Réponse 3</option>
                     <option value="4">Réponse 4</option>
                 </select>
-
-                <input type="number" name="recompense" placeholder="Récompense (or gagné)" min="0" value="50" required>
-
-                <input type="number" name="punition" placeholder="Punition (dégâts)" min="0" value="1" required>
 
                 <button type="submit">Ajouter l'énigme</button>
             </form>

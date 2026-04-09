@@ -1,36 +1,32 @@
 <?php
 session_start();
 require_once 'db.php';
+require_once 'helpers.php';
 
 if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
     header('Location: login.php');
     exit;
 }
 
-function h($texte)
-{
-    return htmlspecialchars((string) $texte, ENT_QUOTES, 'UTF-8');
-}
-
 $idJoueur = (int) $_SESSION['user']['idJoueur'];
 
-/* =========================
-   RÉPONDRE À UNE ÉNIGME
-========================= */
+$enigmeOuverte = null;
+$reponsesEnigmeOuverte = [];
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'answer_enigme') {
     $idEnigme = (int) $_POST['idEnigme'];
     $idReponse = (int) $_POST['idReponse'];
 
     try {
         $stmt = $pdo->prepare("
-            SELECT estReussie
+            SELECT idQuestion
             FROM Statistiques
             WHERE idJoueur = ? AND idQuestion = ?
         ");
         $stmt->execute([$idJoueur, $idEnigme]);
-        $stat = $stmt->fetch();
 
-        if ($stat) {
+        if ($stmt->fetch()) {
             $_SESSION['enigme_message'] = "Tu as déjà répondu à cette quête.";
             $_SESSION['enigme_message_type'] = "error";
             header("Location: enigme.php");
@@ -39,14 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         $stmt = $pdo->prepare("
             SELECT 
-                r.idReponse,
                 r.estBonneReponse,
-                r.reponse,
                 e.idEnigme,
                 e.idCategorie,
+                e.difficulte,
                 e.Recompense,
-                e.Punition,
-                e.enonce
+                e.Punition
             FROM Reponses r
             INNER JOIN Enigmes e ON e.idEnigme = r.idEnigme
             WHERE r.idReponse = ? AND e.idEnigme = ?
@@ -64,10 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $bonne = (int) $choix['estBonneReponse'] === 1;
         $recompense = (int) $choix['Recompense'];
         $punition = (int) $choix['Punition'];
+        $idCategorie = $choix['idCategorie'];
+        $difficulte = $choix['difficulte'];
 
         $pdo->beginTransaction();
 
         if ($bonne) {
+
             $stmt = $pdo->prepare("
                 UPDATE Joueurs
                 SET gold = gold + ?
@@ -81,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ");
             $stmt->execute([$idJoueur, $idEnigme]);
 
+            $message = "Bonne réponse ! Tu gagnes {$recompense} or.";
             $stmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM Statistiques s
@@ -100,8 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt->execute([$idJoueur]);
             $estMage = (int) $stmt->fetchColumn();
 
-            $_SESSION['enigme_message'] = "Bonne réponse ! Tu gagnes {$recompense} or.";
-
             if ($nbReussitesMagiques >= 3 && $estMage === 0) {
                 $stmt = $pdo->prepare("
                     UPDATE Joueurs
@@ -111,15 +107,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->execute([$idJoueur]);
 
                 $_SESSION['user']['estMage'] = 1;
-                $_SESSION['enigme_message'] .= " 🧙 Tu es maintenant devenu Mage !";
+                $message .= " 🧙 Tu es maintenant devenu Mage !";
             }
 
+            $stmt = $pdo->prepare("
+                SELECT e.difficulte
+                FROM Statistiques s
+                INNER JOIN Enigmes e ON e.idEnigme = s.idQuestion
+                WHERE s.idJoueur = ?
+                AND s.estReussie = 1
+                ORDER BY s.idQuestion DESC
+                LIMIT 3
+            ");
+            $stmt->execute([$idJoueur]);
+            $troisDernieres = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            if (count($troisDernieres) === 3 &&
+                $troisDernieres[0] === 'D' &&
+                $troisDernieres[1] === 'D' &&
+                $troisDernieres[2] === 'D') {
+
+                $stmt = $pdo->prepare("
+                    UPDATE Joueurs
+                    SET gold = gold + 100
+                    WHERE idJoueur = ?
+                ");
+                $stmt->execute([$idJoueur]);
+
+                $message .= " Bonus ! 3 quêtes difficiles réussies : +100 or.";
+                $recompense += 100;
+            }
+
+            // Mettre à jour session
             if (isset($_SESSION['user']['or'])) {
                 $_SESSION['user']['or'] += $recompense;
             }
 
+            $_SESSION['enigme_message'] = $message;
             $_SESSION['enigme_message_type'] = "success";
+
         } else {
+            // Enlever points de vie
             $stmt = $pdo->prepare("
                 UPDATE Joueurs
                 SET pointsVie = GREATEST(pointsVie - ?, 0)
@@ -127,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ");
             $stmt->execute([$punition, $idJoueur]);
 
+            // Sauvegarder l'échec
             $stmt = $pdo->prepare("
                 INSERT INTO Statistiques (idJoueur, idQuestion, estReussie)
                 VALUES (?, ?, 0)
@@ -172,30 +201,36 @@ $pointsVie = $joueur ? (int) $joueur['pointsVie'] : 0;
 $alias = $joueur ? $joueur['alias'] : 'Joueur';
 $estMage = $joueur ? (int) $joueur['estMage'] : 0;
 
-/* =========================
-   PIGER UNE ÉNIGME ALÉATOIRE
-========================= */
-$enigmeOuverte = null;
-$reponsesEnigmeOuverte = [];
+if (isset($_GET['piger'])) {
+    $typePige = $_GET['piger'];
+    
+$sql = "
+    SELECT 
+        e.idEnigme,
+        e.enonce,
+        e.difficulte,
+        e.Recompense,
+        e.Punition,
+        c.nomCategorie
+    FROM Enigmes e
+    INNER JOIN Categories c ON c.idCategorie = e.idCategorie
+    LEFT JOIN Statistiques s
+        ON s.idQuestion = e.idEnigme
+       AND s.idJoueur = ?
+    WHERE (s.idQuestion IS NULL OR s.estReussie = 0)
+";
 
-if (isset($_GET['piger']) && $_GET['piger'] == '1') {
-    $stmt = $pdo->prepare("
-        SELECT 
-            e.idEnigme,
-            e.enonce,
-            e.difficulte,
-            e.Recompense,
-            e.Punition,
-            c.nomCategorie
-        FROM Enigmes e
-        INNER JOIN Categories c ON c.idCategorie = e.idCategorie
-        LEFT JOIN Statistiques s
-            ON s.idQuestion = e.idEnigme
-           AND s.idJoueur = ?
-        WHERE s.idQuestion IS NULL
-        ORDER BY RAND()
-        LIMIT 1
-    ");
+    if ($typePige === 'F') {
+        $sql .= " AND e.difficulte = 'F' ";
+    } elseif ($typePige === 'M') {
+        $sql .= " AND e.difficulte = 'M' ";
+    } elseif ($typePige === 'D') {
+        $sql .= " AND e.difficulte = 'D' ";
+    }
+
+    $sql .= " ORDER BY RAND() LIMIT 1 ";
+
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([$idJoueur]);
     $enigmeOuverte = $stmt->fetch();
 
@@ -209,7 +244,7 @@ if (isset($_GET['piger']) && $_GET['piger'] == '1') {
         $stmt->execute([$enigmeOuverte['idEnigme']]);
         $reponsesEnigmeOuverte = $stmt->fetchAll();
     } else {
-        $_SESSION['enigme_message'] = "Il n'y a plus de quête disponible pour toi.";
+        $_SESSION['enigme_message'] = "Aucune quête disponible pour ce choix.";
         $_SESSION['enigme_message_type'] = "error";
         header("Location: enigme.php");
         exit;
@@ -222,7 +257,6 @@ unset($_SESSION['enigme_message'], $_SESSION['enigme_message_type']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -300,14 +334,21 @@ unset($_SESSION['enigme_message'], $_SESSION['enigme_message_type']);
             border: 1px solid rgba(255, 80, 80, 0.30);
         }
 
+        .buttons-box {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
         .btn-piger {
             display: inline-block;
-            margin-top: 24px;
-            padding: 18px 34px;
+            padding: 16px 24px;
             border-radius: 16px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             background: linear-gradient(135deg, #d4af37, #f6d365);
             color: #2d2100;
             box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
@@ -383,7 +424,6 @@ unset($_SESSION['enigme_message'], $_SESSION['enigme_message_type']);
             color: white;
             font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.15s ease, background 0.15s ease;
         }
 
         .reponse-btn:hover {
@@ -398,71 +438,74 @@ unset($_SESSION['enigme_message'], $_SESSION['enigme_message_type']);
         }
     </style>
 </head>
-
 <body>
 
-    <?php include_once 'template/header.php'; ?>
+<?php include_once 'template/header.php'; ?>
 
-    <main>
-        <div class="top-box">
-            <h1>Quêtes aléatoires</h1>
-            <p>Clique sur le bouton pour piger une quête aléatoire et tente ta chance.</p>
+<main>
+    <div class="top-box">
+        <h1>Quêtes</h1>
+        <p>Choisis le type de quête que tu veux piger.</p>
 
-            <div class="joueur-stats">
-                <div class="stat-pill">Joueur : <?= h($alias) ?></div>
-                <div class="stat-pill">Or : <?= h($gold) ?></div>
-                <div class="stat-pill">Points de vie : <?= h($pointsVie) ?></div>
+        <div class="joueur-stats">
+            <div class="stat-pill">Joueur : <?= h($alias) ?></div>
+            <div class="stat-pill">Or : <?= h($gold) ?></div>
+            <div class="stat-pill">Points de vie : <?= h($pointsVie) ?></div>
 
-                <?php if ($estMage === 1): ?>
-                    <div class="mage-badge">🧙 Mage</div>
-                <?php endif; ?>
-            </div>
-
-            <a class="btn-piger" href="enigme.php?piger=1">Piger une quête</a>
+            <?php if ($estMage === 1): ?>
+                <div class="mage-badge">🧙 Mage</div>
+            <?php endif; ?>
         </div>
 
-        <?php if ($message !== ""): ?>
-            <div class="message <?= $messageType === "success" ? "success" : "error" ?>">
-                <?= h($message) ?>
-            </div>
-        <?php endif; ?>
-    </main>
+        <div class="buttons-box">
+            <a class="btn-piger" href="enigme.php?piger=alea">Piger une quête aléatoire</a>
+            <a class="btn-piger" href="enigme.php?piger=F">Piger une quête facile</a>
+            <a class="btn-piger" href="enigme.php?piger=M">Piger une quête moyenne</a>
+            <a class="btn-piger" href="enigme.php?piger=D">Piger une quête difficile</a>
+        </div>
+    </div>
 
-    <?php if ($enigmeOuverte): ?>
-        <div class="popup-overlay">
-            <div class="popup-content">
-                <button class="popup-close" onclick="window.location.href='enigme.php'">✕</button>
-
-                <h2><?= h($enigmeOuverte['nomCategorie']) ?></h2>
-
-                <div class="enigme-meta">
-                    <div><strong>Catégorie :</strong> <?= h($enigmeOuverte['nomCategorie']) ?></div>
-                    <div><strong>Difficulté :</strong> <?= h($enigmeOuverte['difficulte']) ?></div>
-                    <div><strong>Récompense :</strong> <?= h($enigmeOuverte['Recompense']) ?> or</div>
-                    <div><strong>Punition :</strong> <?= h($enigmeOuverte['Punition']) ?> dégât(s)</div>
-                </div>
-
-                <div class="popup-enonce">
-                    <?= nl2br(h($enigmeOuverte['enonce'])) ?>
-                </div>
-
-                <div class="reponses-grid">
-                    <?php foreach ($reponsesEnigmeOuverte as $reponse): ?>
-                        <form method="post">
-                            <input type="hidden" name="action" value="answer_enigme">
-                            <input type="hidden" name="idEnigme" value="<?= (int) $enigmeOuverte['idEnigme'] ?>">
-                            <input type="hidden" name="idReponse" value="<?= (int) $reponse['idReponse'] ?>">
-
-                            <button type="submit" class="reponse-btn">
-                                <?= h($reponse['reponse']) ?>
-                            </button>
-                        </form>
-                    <?php endforeach; ?>
-                </div>
-            </div>
+    <?php if ($message !== ""): ?>
+        <div class="message <?= $messageType === "success" ? "success" : "error" ?>">
+            <?= h($message) ?>
         </div>
     <?php endif; ?>
+</main>
+
+<?php if ($enigmeOuverte): ?>
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <button class="popup-close" onclick="window.location.href='enigme.php'">✕</button>
+
+            <h2><?= h($enigmeOuverte['nomCategorie']) ?></h2>
+
+            <div class="enigme-meta">
+                <div><strong>Catégorie :</strong> <?= h($enigmeOuverte['nomCategorie']) ?></div>
+                <div><strong>Difficulté :</strong> <?= h($enigmeOuverte['difficulte']) ?></div>
+                <div><strong>Récompense :</strong> <?= h($enigmeOuverte['Recompense']) ?> or</div>
+                <div><strong>Punition :</strong> <?= h($enigmeOuverte['Punition']) ?> dégât(s)</div>
+            </div>
+
+            <div class="popup-enonce">
+                <?= nl2br(h($enigmeOuverte['enonce'])) ?>
+            </div>
+
+            <div class="reponses-grid">
+                <?php foreach ($reponsesEnigmeOuverte as $reponse): ?>
+                    <form method="post">
+                        <input type="hidden" name="action" value="answer_enigme">
+                        <input type="hidden" name="idEnigme" value="<?= (int) $enigmeOuverte['idEnigme'] ?>">
+                        <input type="hidden" name="idReponse" value="<?= (int) $reponse['idReponse'] ?>">
+
+                        <button type="submit" class="reponse-btn">
+                            <?= h($reponse['reponse']) ?>
+                        </button>
+                    </form>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 </body>
-
 </html>
