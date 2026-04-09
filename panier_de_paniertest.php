@@ -61,49 +61,7 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
         return [];
     }
 }
-function ajouter_objet_panier_nombre($pdo, $idItem, $nombre)/////////////////////////////////////////////////////////////
-{ // ajoute +1 objet au panier selon l'id de l'item
-    if (!isset($_SESSION['user']['idJoueur'])) {
-        return false; // sécurité
-    }
-    $joueur_id = $_SESSION['user']['idJoueur'];
 
-    $info_item = obtenirArticle($pdo, $idItem);
-
-    if (!$info_item || $info_item["estDisponible"] != 1 || $info_item['quantiteStock'] <= 0) { //item non-disponible. Impossible d'ajouter
-        //echo "<script>alert('Ajout d'item impossible');</script>";
-        return false;
-    }
-    $sql = "SELECT quantitePanier
-            FROM Paniers 
-            WHERE idJoueur = ? AND idItem = ?";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$joueur_id, $idItem]);
-    $item = $stmt->fetch();
-
-    try {
-        if ($item) {
-            $sql = "UPDATE Paniers
-                    SET quantitePanier = quantitePanier + $nombre
-                    WHERE idJoueur = ? AND idItem = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$joueur_id, $idItem, $nombre]);
-
-        } else {
-            $sql = "INSERT INTO Paniers 
-                    (idJoueur, idItem, quantitePanier)
-                    VALUES (?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$joueur_id, $idItem, $nombre]);
-        }
-
-        return true;
-
-    } catch (Exception $e) {
-
-    }
-}
 function ajouter_objet_panier($pdo, $idItem) // ajouter nombre optionnel?
 { // ajoute +1 objet au panier selon l'id de l'item
     if (!isset($_SESSION['user']['idJoueur'])) {
@@ -195,7 +153,6 @@ function retirer_objet_panier($pdo, $idItem)
         return false;
     }
 }
-
 function acheter_panier($pdo)
 {
     if (!isset($_SESSION['user']['idJoueur'])) {

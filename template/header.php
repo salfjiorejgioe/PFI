@@ -16,6 +16,9 @@ $user = $_SESSION['user'] ?? null;
           <div class="user-info-top">
             <span class="user-name">Bonjour, <?php echo h($user['alias']); ?></span>
             <span class="user-role">
+              <?php echo (int)($user['pointsVie']); ?> Points de vie
+            </span>
+            <span class="user-role">
               <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>
             </span>
           </div>
