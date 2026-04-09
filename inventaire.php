@@ -182,7 +182,6 @@ foreach ($itemsInventaire as $item) {
         </div>
       <?php endif; ?>
     </section>
-
   <?php endif; ?>
 </main>
 

@@ -385,7 +385,6 @@ foreach ($articles_panier as $article) {
                                 <button type="submit" name="action" value="Modifier quantité" class="btn-maj">
                                     Mettre à jour
                                 </button>
-
                                 <button type="submit" name="action" value="Supprimer du panier" class="btn-supprimer">
                                     Supprimer du panier
                                 </button>
