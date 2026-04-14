@@ -749,3 +749,117 @@ nav a:hover {
 .wallet-item.bronze .wallet-label {
   color: #c47a3a;
 }
+
+/*barre de vie*/
+
+progress {
+  /* Reset default look */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  
+  /* Size */
+  width: 150px;
+  height: 20px;
+  
+  /* Outer border */
+  border: 2px solid white;
+  border-radius: 10px;
+  background: transparent;
+  overflow: hidden; /* Important for rounded corners */
+}
+
+/* Background (empty part) */
+progress::-webkit-progress-bar {
+  background: transparent;
+  border-radius: 10px;
+}
+
+/* low hp */
+/* Filled part */
+.low_hp::-webkit-progress-value {
+  background-color: red;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.low_hp::-moz-progress-bar {
+  background-color: red;
+  border-radius: 10px;
+}
+
+/* mid hp */
+.mid_hp::-webkit-progress-value {
+  background-color: orange;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.mid_hp::-moz-progress-bar {
+  background-color: orange;
+  border-radius: 10px;
+}
+
+/*high hp*/
+.high_hp::-webkit-progress-value {
+  background-color: rgb(0, 200, 0);
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.high_hp::-moz-progress-bar {
+  background-color: rgb(0, 200, 0);
+  border-radius: 10px;
+}
+
+/* overflowing hp*/
+
+.overflow_hp::-webkit-progress-value {
+  background-color: blue;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.overflow_hp::-moz-progress-bar {
+  background-color: blue;
+  border-radius: 10px;
+}
+
+
+
+/*barre de vie*/
+
+progress {
+  /* Reset default look */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  
+  /* Size */
+  width: 150px;
+  height: 20px;
+  
+  /* Outer border */
+  border: 2px solid white;
+  border-radius: 10px;
+  background: transparent;
+  overflow: hidden; /* Important for rounded corners */
+}
+
+/* Background (empty part) */
+progress::-webkit-progress-bar {
+  background: transparent;
+  border-radius: 10px;
+}
+
+/* Filled part */
+progress::-webkit-progress-value {
+  background-color: red;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+progress::-moz-progress-bar {
+  background-color: red;
+  border-radius: 10px;
+}
