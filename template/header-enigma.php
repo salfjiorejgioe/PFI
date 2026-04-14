@@ -4,8 +4,8 @@ $user = $_SESSION['user'] ?? null;
 <header>
   <div class="header-row">
     <div class="title-block">
-      <h1>⚔️ Marché Darquest</h1>
-      <h2>Notre bibliothèque des objets magiques et puissants</h2>
+      <h1>✨Enigma✨</h1>
+      <h2>Les quêtes pour les aventuriers sussy-bakas</h2>
     </div>
 
     <div class="top-actions">
