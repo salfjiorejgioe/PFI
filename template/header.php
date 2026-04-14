@@ -9,14 +9,48 @@ $user = $_SESSION['user'] ?? null;
     </div>
 
     <div class="top-actions">
-      <a id="cartBtn" class="icon-btn" href="#cart">🛒</a>
 
       <?php if (!empty($user)): ?>
         <div class="user-info">
           <div class="user-info-top">
             <span class="user-name">Bonjour, <?php echo h($user['alias']); ?></span>
-            <span class="user-role">
-              <?php echo (int)($user['pointsVie']); ?> Points de vie
+            <span class="user-role"
+            style="
+                    display: flex;
+                    justify-content: center; /* horizontal */
+                    align-items: center;
+                  "
+            >
+              <label for="healthbar" style="position: relative; left: 18px;">
+                <?php
+                $hp = (int)($user['pointsVie']);
+                if($hp >50)
+                  echo '<img src="image-site/1Pixel_heart_overflow.png" alt="confident" style="height: 35px;">';
+                elseif($hp >=35 && $hp <=50)
+                  echo '<img src="image-site/2Pixel_heart.png" alt="omagah" style="height: 35px;">';
+                elseif($hp >15 && $hp < 35)
+                  echo '<img src="image-site/3Pixel_heart_mid.png" alt="hmmm" style="height: 35px;">';
+                elseif($hp <=15)
+                  echo '<img src="image-site/4Pixel_heart_damaged.png" alt="o nooooo" style="height: 35px;">';
+                ?>
+              </label>
+              <progress id="healthbar" 
+              class="
+              <?php
+              $hp = (int)($user['pointsVie']);
+              if($hp <=15)
+                echo 'low_hp';
+              if($hp >15 && $hp < 35)
+                echo 'mid_hp';
+              elseif($hp >=35 && $hp <=50)
+                echo 'high_hp';
+              elseif($hp >50)
+                echo 'overflow_hp';
+              ?>
+              " 
+              value="<?php echo (int)($user['pointsVie']);?>" 
+              max="50"></progress>
+              <label for="healthbar" style="position: relative; top: 10px; right: 50px;"><?php echo (int)($user['pointsVie']);?> / 100</label>
             </span>
             <span class="user-role">
               <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>

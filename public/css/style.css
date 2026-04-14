@@ -1674,14 +1674,52 @@ progress::-webkit-progress-bar {
   border-radius: 10px;
 }
 
+/* low hp */
 /* Filled part */
-progress::-webkit-progress-value {
+.low_hp::-webkit-progress-value {
   background-color: red;
   border-radius: 8px;
 }
 
 /* Firefox support */
-progress::-moz-progress-bar {
+.low_hp::-moz-progress-bar {
   background-color: red;
+  border-radius: 10px;
+}
+
+/* mid hp */
+.mid_hp::-webkit-progress-value {
+  background-color: orange;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.mid_hp::-moz-progress-bar {
+  background-color: orange;
+  border-radius: 10px;
+}
+
+/*high hp*/
+.high_hp::-webkit-progress-value {
+  background-color: rgb(0, 200, 0);
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.high_hp::-moz-progress-bar {
+  background-color: rgb(0, 200, 0);
+  border-radius: 10px;
+}
+
+/* overflowing hp*/
+
+.overflow_hp::-webkit-progress-value {
+  background-color: blue;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.overflow_hp::-moz-progress-bar {
+  background-color: blue;
   border-radius: 10px;
 }
