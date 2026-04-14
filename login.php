@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    argent,
                    bronze,
                    estMage,
-                   estAdmin
+                   estAdmin,
+                   pointsVie
             FROM Joueurs
             WHERE alias = :alias
             LIMIT 1
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 'estMage'  => (int)$joueur['estMage'],
                 'estAdmin' => (int)$joueur['estAdmin'],
+                'pointsVie' => (int)$joueur['pointsVie'] ?? 0,
             ];
 
             header('Location: index.php');
