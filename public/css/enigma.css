@@ -654,3 +654,98 @@ nav a {
 nav a:hover {
   background: rgba(0, 0, 0, 0.55);
 }
+.user-role {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  white-space: nowrap;
+}
+.user-info {
+  min-width: 290px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.user-info-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+
+.user-role {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  white-space: nowrap;
+}
+
+.user-wallet {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wallet-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  /* less vertical padding */
+  border-radius: 999px;
+  /* pill shape */
+  background: rgba(0, 0, 0, 0.40);
+  min-width: 0;
+  /* allow flex-grow without overflow */
+  flex: 1 1 0;
+  /* share width instead of adding height */
+}
+
+.wallet-emoji {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.wallet-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.wallet-value {
+  margin-left: auto;
+  /* push value to right edge of pill */
+  font-weight: 700;
+}
+
+.wallet-item.gold .wallet-value,
+.wallet-item.gold .wallet-label {
+  color: #f6d26a;
+}
+
+.wallet-item.silver .wallet-value,
+.wallet-item.silver .wallet-label {
+  color: #d9d9d9;
+}
+
+.wallet-item.bronze .wallet-value,
+.wallet-item.bronze .wallet-label {
+  color: #c47a3a;
+}

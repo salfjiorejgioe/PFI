@@ -316,6 +316,7 @@ $pvPercent = max(0, min(100, $pointsVie));
 
 
 <main>
+    <?php include_once 'template/header-enigma.php'; ?>
     <div class="hero-top">
         <div class="mage-title">✨ ENIGMA ✨</div>
 
