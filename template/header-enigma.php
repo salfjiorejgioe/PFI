@@ -35,6 +35,7 @@ $user = $_SESSION['user'] ?? null;
                 ?>
               </label>
               <progress id="healthbar" 
+              style="width: 150px;"
               class="
               <?php
               $hp = (int)($user['pointsVie']);

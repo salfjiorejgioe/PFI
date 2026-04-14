@@ -529,7 +529,8 @@
 
   progress {
     width: 100%;
-    max-width: 220px;
+    /* max-width: 220px; */
+
   }
 }
 
@@ -688,16 +689,6 @@ nav a:hover {
   font-size: 0.98rem;
 }
 
-.user-role {
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  white-space: nowrap;
-}
-
 .user-wallet {
   display: flex;
   gap: 8px;
@@ -759,7 +750,8 @@ progress {
   border: none;
   
   /* Size */
-  width: 150px;
+  /* width: 150px; */
+  width: 100%;
   height: 20px;
   
   /* Outer border */
@@ -823,27 +815,6 @@ progress::-webkit-progress-bar {
 .overflow_hp::-moz-progress-bar {
   background-color: blue;
   border-radius: 10px;
-}
-
-
-
-/*barre de vie*/
-
-progress {
-  /* Reset default look */
-  -webkit-appearance: none;
-  appearance: none;
-  border: none;
-  
-  /* Size */
-  width: 150px;
-  height: 20px;
-  
-  /* Outer border */
-  border: 2px solid white;
-  border-radius: 10px;
-  background: transparent;
-  overflow: hidden; /* Important for rounded corners */
 }
 
 /* Background (empty part) */
