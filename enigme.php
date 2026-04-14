@@ -353,7 +353,7 @@ $pvPercent = max(0, min(100, $pointsVie));
               " 
               value="<?php echo (int)($user['pointsVie']);?>" 
               max="50"></progress>
-              <label for="healthbar" style="position: absolute; bottom: -10px; right: 20px; text-shadow: 0px 0px 5px black;"><?php echo (int)($user['pointsVie']);?> / 50 PV</label>
+              <label for="healthbar" style="font-weight: bold; position: absolute; bottom: -9px; right: 20px; text-shadow: 0px 0px 5px black;"><?php echo (int)($user['pointsVie']);?> / 50 PV</label>
         </div>
 
         <div class="currencies">
