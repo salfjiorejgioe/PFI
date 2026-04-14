@@ -61,7 +61,8 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
         return [];
     }
 }
-function ajouter_objet_panier($pdo, $idItem)
+
+function ajouter_objet_panier($pdo, $idItem) // ajouter nombre optionnel?
 { // ajoute +1 objet au panier selon l'id de l'item
     if (!isset($_SESSION['user']['idJoueur'])) {
         return false; // sécurité
@@ -152,7 +153,6 @@ function retirer_objet_panier($pdo, $idItem)
         return false;
     }
 }
-
 function acheter_panier($pdo)
 {
     if (!isset($_SESSION['user']['idJoueur'])) {
@@ -207,6 +207,7 @@ function acheter_panier($pdo)
         foreach ($panier as $item) {
             if ($item['typeItem'] == 'S' && $_SESSION['user']['estMage'] != 1) {
                 throw new Exception("Seuls les mages peuvent acheter des sorts");
+
             }
             $prix = (int) $item['prix'];
             $quantite = (int) $item['quantitePanier'];
@@ -461,6 +462,11 @@ function afficher_panier($pdo)
         $prixtotal = $prix * $quantite;
 
         // faire en sorte d'avoir des boutons qui appellent les fonctions ajouter/retirer en passant l'id de l'item quand appuyés
+        // ajouter input number qui:
+        // - submit le form et refresh page quand stopped typing (javascript) (php input number submit form auto when stopped typing)
+        // - update shown number depending 
+        //          - (default number) placeholder = 0
+        //          
         echo '
     <div class="panier-item-grid">
         <a class="" href="details.php?id=' . $idItem . '">
@@ -473,6 +479,7 @@ function afficher_panier($pdo)
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
             <input type="submit" name="action" value="Ajouter"/> 
+            
             <input type="submit" name="action" value="Retirer"/>
             <input type="submit" name="action" value="Supprimer du panier"/>
         </form>
