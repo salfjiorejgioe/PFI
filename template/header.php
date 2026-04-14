@@ -50,7 +50,7 @@ $user = $_SESSION['user'] ?? null;
               " 
               value="<?php echo (int)($user['pointsVie']);?>" 
               max="50"></progress>
-              <label for="healthbar" style="position: relative; top: 10px; right: 50px;"><?php echo (int)($user['pointsVie']);?> / 50</label>
+              <label for="healthbar" style="position: relative; top: 10px; right: 50px; text-shadow: 0px 0px 5px black;"><?php echo (int)($user['pointsVie']);?> / 50</label>
             </span>
             <span class="user-role">
               <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>
