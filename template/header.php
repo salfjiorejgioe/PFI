@@ -17,7 +17,7 @@ $user = $_SESSION['user'] ?? null;
             <span class="user-role"
             style="
                     display: flex;
-                    justify-content: center; /* horizontal */
+                    justify-content: center;
                     align-items: center;
                   "
             >
@@ -53,7 +53,7 @@ $user = $_SESSION['user'] ?? null;
               <label for="healthbar" style="position: relative; top: 10px; right: 50px; text-shadow: 0px 0px 5px black;"><?php echo (int)($user['pointsVie']);?> / 50</label>
             </span>
             <span class="user-role">
-              <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>
+                <?php echo !empty($user['estMage']) ? 'Est mage' : 'Pas mage'; ?>
             </span>
           </div>
 
