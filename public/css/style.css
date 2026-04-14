@@ -2,33 +2,108 @@
   box-sizing: border-box;
 }
 
+/* Global safety for mobile */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* HEADER MOBILE LAYOUT */
 @media (max-width: 768px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   header {
-    padding-top: 80px;
-    /* Extra clearance on small screens */
-    gap: 0.75rem;
+    padding-top: 16px;
+    padding-inline: 12px;
   }
 
-  h1 {
-    font-size: 2rem;
-  }
-
-  header section {
-    flex-direction: column;
+  .header-row {
+    flex-direction: column;      /* <— CRITICAL */
     align-items: stretch;
-    gap: 10px;
+    gap: 12px;
   }
 
-  header section input[type="text"] {
-    min-width: unset;
+  .title-block {
+    max-width: 100%;
+  }
+
+  .title-block h1,
+  .title-block h2 {
+    text-align: left;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+  }
+
+  .top-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .user-info {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .user-info-top {
+    flex-wrap: wrap;
+    gap: 6px;
+    white-space: normal;         /* allow Bonjour + PV to break */
+  }
+
+  .user-role,
+  .user-name {
+    white-space: normal;
+  }
+
+  .user-wallet {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .wallet-item {
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+
+  .login-btn,
+  #cartBtn {
+    width: 100%;
+    justify-content: center;
   }
 
   nav ul {
-    gap: 8px;
-    font-size: 0.9rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  nav a {
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+
+  header section,
+  #filtres {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  header section input[type="text"],
+  #filtres input[type="text"] {
+    min-width: 0;                /* override 280/320px */
+    width: 100%;
+  }
+
+  progress {
+    width: 100%;
+    max-width: 220px;
   }
 }
-
 
 body {
   margin: 0;
@@ -71,10 +146,7 @@ header {
   gap: 2rem;
 }
 
-/* Title block */
-.title-block {
-  max-width: 60%;
-}
+
 
 .title-block h1 {
   margin: 0;
@@ -99,8 +171,6 @@ header {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
 }
 
 .icon-btn {
@@ -761,7 +831,6 @@ img.item-thumb {
   justify-content: space-between;
   gap: 10px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .user-name {
@@ -782,7 +851,7 @@ img.item-thumb {
 .user-wallet {
   display: flex;
   gap: 8px;
-  flex-wrap: stretch;
+  flex-wrap: wrap;
 }
 
 .wallet-item {
@@ -1368,9 +1437,6 @@ img.item-thumb {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-
   width: min(900px, 92vw);
   margin: 0 auto;
   padding: 10px 12px;
@@ -1580,4 +1646,80 @@ img.item-thumb {
 .cart-head-actions button:hover,
 .cart-head-actions input:hover {
   background: rgba(167, 139, 250, 0.2);
+}
+
+
+/*barre de vie*/
+
+progress {
+  /* Reset default look */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  
+  /* Size */
+  width: 150px;
+  height: 20px;
+  
+  /* Outer border */
+  border: 2px solid white;
+  border-radius: 10px;
+  background: transparent;
+  overflow: hidden; /* Important for rounded corners */
+}
+
+/* Background (empty part) */
+progress::-webkit-progress-bar {
+  background: transparent;
+  border-radius: 10px;
+}
+
+/* low hp */
+/* Filled part */
+.low_hp::-webkit-progress-value {
+  background-color: red;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.low_hp::-moz-progress-bar {
+  background-color: red;
+  border-radius: 10px;
+}
+
+/* mid hp */
+.mid_hp::-webkit-progress-value {
+  background-color: orange;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.mid_hp::-moz-progress-bar {
+  background-color: orange;
+  border-radius: 10px;
+}
+
+/*high hp*/
+.high_hp::-webkit-progress-value {
+  background-color: rgb(0, 200, 0);
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.high_hp::-moz-progress-bar {
+  background-color: rgb(0, 200, 0);
+  border-radius: 10px;
+}
+
+/* overflowing hp*/
+
+.overflow_hp::-webkit-progress-value {
+  background-color: blue;
+  border-radius: 8px;
+}
+
+/* Firefox support */
+.overflow_hp::-moz-progress-bar {
+  background-color: blue;
+  border-radius: 10px;
 }
