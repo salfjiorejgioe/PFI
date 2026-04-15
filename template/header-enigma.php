@@ -1,4 +1,4 @@
-<?php
+<!-- <?php
 $user = $_SESSION['user'] ?? null;
 ?>
 <header>
@@ -33,4 +33,4 @@ $user = $_SESSION['user'] ?? null;
       <?php endif; ?>
     </ul>
   </nav>
-</header>
+</header> -->
