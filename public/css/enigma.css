@@ -610,6 +610,7 @@ header {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.18);
   white-space: nowrap;
+
   /* Prevents button text wrap */
 }
 
@@ -663,6 +664,8 @@ nav a:hover {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
   white-space: nowrap;
+  
+    align-content: center;
 }
 .user-info {
   min-width: 290px;
