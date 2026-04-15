@@ -13,15 +13,13 @@ $idJoueur = (int) $_SESSION['user']['idJoueur'];
 $enigmeOuverte = null;
 $reponsesEnigmeOuverte = [];
 
-/* =========================
-   RÉPONDRE À UNE ÉNIGME
-========================= */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'answer_enigme') {
     $idEnigme = (int) $_POST['idEnigme'];
     $idReponse = (int) $_POST['idReponse'];
 
     try {
-        // On bloque seulement si la quête a déjà été réussie.
+      
         $stmt = $pdo->prepare("
             SELECT estReussie
             FROM Statistiques
