@@ -334,10 +334,7 @@ try {
                     <option value="D">Difficile</option>
                 </select>
 
-                <label class="admin-check">
-                    <input type="checkbox" name="estPigee">
-                    Déjà pigée
-                </label>
+                
 
                 <input type="text" name="reponse1" placeholder="Réponse 1" required>
                 <input type="text" name="reponse2" placeholder="Réponse 2" required>
