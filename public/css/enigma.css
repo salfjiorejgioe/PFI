@@ -39,9 +39,7 @@ main {
   text-align: center;
 }
 
-/* =========================
-   HERO ENIGMA
-========================= */
+/* HERO ENIGMA */
 
 .hero-top {
   margin-bottom: 40px;
@@ -74,9 +72,8 @@ main {
   font-weight: 500;
 }
 
-/* =========================
-   HEALTH BAR
-========================= */
+/*HEALTH BAR*/
+
 
 .pv-row {
   width: min(700px, 100%);
@@ -160,9 +157,6 @@ progress::-moz-progress-bar {
   background: linear-gradient(90deg, #54d445 0%, #7af267 100%);
 }
 
-/* =========================
-   CURRENCIES
-========================= */
 
 .currencies {
   display: flex;
@@ -192,9 +186,7 @@ progress::-moz-progress-bar {
   color: #ff8a1f;
 }
 
-/* =========================
-   QUEST GRID
-========================= */
+
 
 .quest-grid {
   display: grid;
@@ -323,18 +315,15 @@ progress::-moz-progress-bar {
   height: 48px;
   object-fit: contain;
 
-  /* Transformation en rose/rouge */
+
   filter:
     brightness(0) saturate(100%) invert(39%) sepia(96%) saturate(4200%) hue-rotate(315deg) brightness(105%) contrast(105%)
-    /* Glow */
+
     drop-shadow(0 0 6px rgba(255, 80, 120, 0.6)) drop-shadow(0 0 14px rgba(255, 80, 120, 0.4));
 
   transition: 0.2s ease;
 }
 
-/* =========================
-   POPUPS
-========================= */
 
 .popup-overlay {
   position: fixed;
