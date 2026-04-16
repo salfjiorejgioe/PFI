@@ -362,7 +362,7 @@ $pvPercent = max(0, min(100, $pointsVie));
             <div class="mage-title">✨ ENIGMA ✨</div>
 
             <div class="pv-row" style="position: relative">
-                <label for="healthbar" style="position: relative; right: 30px; top: 55px;">
+                <label for="healthbar" style="position: relative; right: 31px; top: 50px;">
                     <?php
                     $hp = (int) ($user['pointsVie']);
                     if ($hp > 50)
