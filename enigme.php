@@ -551,7 +551,7 @@ $pvPercent = max(0, min(100, $pointsVie));
             <div class="mage-title">✨ ENIGMA ✨</div>
 
             <div class="pv-row" style="position: relative">
-                <label for="healthbar" style="position: relative; right: 30px; top: 55px;">
+                <label for="healthbar" style="position: relative; right: 30px; top: 50px;">
                     <?php
                     $hp = (int) ($joueur['pointsVie']);
                     if ($hp > 50)
@@ -585,11 +585,11 @@ $pvPercent = max(0, min(100, $pointsVie));
                 </label>
             </div>
 
-            <div class="currencies">
-                <div class="currency or">🪙 <?= h($gold) ?></div>
-                <div class="currency argent">🪙 <?= h($argent) ?></div>
-                <div class="currency bronze">🪙 <?= h($bronze) ?></div>
-            </div>
+           <div class="currencies">
+    <div class="currency or"><img class="coin-icon" src="image-site/gold_coin.png" alt=""> <?= h($gold) ?></div>
+    <div class="currency argent"><img class="coin-icon" src="image-site/argent_coin.png" alt=""> <?= h($argent) ?></div>
+    <div class="currency bronze"><img class="coin-icon" src="image-site/bronze_coin.png" alt=""> <?= h($bronze) ?></div>
+</div>
 
             <h1 class="big-title">Piger une quête</h1>
             <p class="subtitle">
