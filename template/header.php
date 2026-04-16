@@ -59,20 +59,26 @@ $user = $_SESSION['user'] ?? null;
 
           <div class="user-wallet">
             <div class="wallet-item gold">
-              <span class="wallet-emoji">🥇</span>
-              <span class="wallet-label">Gold</span>
+              <span class="wallet-emoji">
+                <img src="image-site/gold_coin.png" alt="Gold Coin" class="coin-icon">
+              </span>
+       
               <span class="wallet-value"><?php echo (int)$user['or']; ?></span>
             </div>
 
             <div class="wallet-item silver">
-              <span class="wallet-emoji">🥈</span>
-              <span class="wallet-label">Argent</span>
+              <span class="wallet-emoji">
+                <img src="image-site/argent_coin.png" alt="Silver Coin" class="coin-icon">
+              </span>
+      
               <span class="wallet-value"><?php echo (int)$user['argent']; ?></span>
             </div>
 
             <div class="wallet-item bronze">
-              <span class="wallet-emoji">🥉</span>
-              <span class="wallet-label">Bronze</span>
+              <span class="wallet-emoji">
+                <img src="image-site/bronze_coin.png" alt="Bronze Coin" class="coin-icon">
+              </span>
+            
               <span class="wallet-value"><?php echo (int)$user['bronze']; ?></span>
             </div>
           </div>
