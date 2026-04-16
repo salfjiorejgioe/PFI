@@ -291,7 +291,49 @@ progress::-moz-progress-bar {
 .aleatoire .quest-subtitle {
   color: #c58cff;
 }
+.magique {
+    border: 2px solid rgba(186, 126, 255, 0.48);
+    box-shadow: 0 0 24px rgba(186, 126, 255, 0.12);
+    background: linear-gradient(180deg, rgba(80, 28, 120, 0.32), rgba(45, 12, 85, 0.42));
+}
 
+.magique .quest-title,
+.magique .quest-subtitle {
+    color: #d4a7ff;
+}
+
+.statistiques {
+    border: 2px solid rgba(120, 220, 255, 0.38);
+    box-shadow: 0 0 24px rgba(120, 220, 255, 0.10);
+    background: linear-gradient(180deg, rgba(28, 58, 100, 0.30), rgba(16, 20, 70, 0.40));
+}
+
+.statistiques .quest-title,
+.statistiques .quest-subtitle {
+    color: #aee9ff;
+}
+.icon-stats {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+
+    /* Transformation en rose/rouge */
+    filter:
+        brightness(0)
+        saturate(100%)
+        invert(39%)
+        sepia(96%)
+        saturate(4200%)
+        hue-rotate(315deg)
+        brightness(105%)
+        contrast(105%)
+
+        /* Glow */
+        drop-shadow(0 0 6px rgba(255, 80, 120, 0.6))
+        drop-shadow(0 0 14px rgba(255, 80, 120, 0.4));
+
+    transition: 0.2s ease;
+}
 /* =========================
    POPUPS
 ========================= */
