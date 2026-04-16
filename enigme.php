@@ -314,18 +314,44 @@ $pvPercent = max(0, min(100, $pointsVie));
 
 
 <main>
+    <?php include_once 'template/header-enigma.php'; ?>
     <div class="hero-top">
         <div class="mage-title">✨ ENIGMA ✨</div>
 
-        <div class="pv-row">
-            <div class="pv-label-line">
-                <span>♡ Points de Vie</span>
-                <span><?= h($pointsVie) ?> / 100</span>
-            </div>
-
-            <div class="pv-bar">
-                <div class="pv-fill" style="width: <?= $pvPercent ?>%;"></div>
-            </div>
+        <div class="pv-row"
+        style="position: relative">
+            <label for="healthbar" style="position: relative; right: 30px; top: 55px;">
+                <?php
+                $hp = (int)($user['pointsVie']);
+                if($hp >50)
+                  echo '<img src="image-site/1Pixel_heart_overflow.png" alt="confident" style="height: 70px;">';
+                elseif($hp >=35 && $hp <=50)
+                  echo '<img src="image-site/2Pixel_heart.png" alt="omagah" style="height: 70px;">';
+                elseif($hp >15 && $hp < 35)
+                  echo '<img src="image-site/3Pixel_heart_mid.png" alt="hmmm" style="height: 70px;">';
+                elseif($hp <=15)
+                  echo '<img src="image-site/4Pixel_heart_damaged.png" alt="o nooooo" style="height: 70px;">';
+                ?>
+              </label>
+              <progress id="healthbar" 
+              style="height: 40px;
+              border-radius: 20px;"
+              class="
+              <?php
+              $hp = (int)($user['pointsVie']);
+              if($hp <=15)
+                echo 'low_hp';
+              if($hp >15 && $hp < 35)
+                echo 'mid_hp';
+              elseif($hp >=35 && $hp <=50)
+                echo 'high_hp';
+              elseif($hp >50)
+                echo 'overflow_hp';
+              ?>
+              " 
+              value="<?php echo (int)($user['pointsVie']);?>" 
+              max="50"></progress>
+              <label for="healthbar" style="font-weight: bold; position: absolute; bottom: -9px; right: 20px; text-shadow: 0px 0px 5px black;"><?php echo (int)($user['pointsVie']);?> / 50 PV</label>
         </div>
 
         <div class="currencies">
