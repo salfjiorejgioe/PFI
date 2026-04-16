@@ -438,7 +438,7 @@ $pvPercent = max(0, min(100, $pointsVie));
 
            <a class="quest-card statistiques" href="enigme.php?voir=stats">
     <span class="quest-icon">
-        <img src="image-site/statistiques.png" class="icon-stats" alt="Statistiques">
+        <img src="image-site/statistique.png" class="icon-stats" alt="Statistiques">
     </span>
     <div class="quest-title">Statistiques</div>
     <div class="quest-subtitle">Voir votre progression</div>
@@ -521,7 +521,7 @@ $pvPercent = max(0, min(100, $pointsVie));
         <div class="popup-content message-popup">
             <button class="popup-close" onclick="window.location.href='enigme.php'">✕</button>
 
-            <div class="message-icon">📊</div>
+            <div class="message-icon"> <img src="image-site/statistique.png" class="icon-stats" alt="Statistiques"></div>
             <div class="message-title">Statistiques</div>
 
             <div class="message-text" style="text-align:left;">
