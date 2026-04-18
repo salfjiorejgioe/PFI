@@ -10,7 +10,9 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+ font-family: 'VT323', monospace;
+font-size: 20px;
   color: white;
   overflow-x: hidden;
   position: relative;
@@ -20,6 +22,9 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+}
+* {
+  image-rendering: pixelated;
 }
 
 
@@ -69,7 +74,8 @@ main {
 
 .subtitle {
   margin: 0 0 54px 0;
-  font-size: 1.35rem;
+  /* front size-:1.35rem;*/
+  font-size: 1.85rem;
   color: #b68ad7;
   font-weight: 500;
 }
@@ -257,13 +263,13 @@ width: 64px;
 }
 
 .quest-title {
-  font-size: 1.15rem;
+  font-size: 2.10rem;
   font-weight: 900;
   margin-bottom: 10px;
 }
 
 .quest-subtitle {
-  font-size: 0.95rem;
+  font-size: 1.35rem;
   font-weight: 700;
   opacity: 0.9;
 }
@@ -305,14 +311,14 @@ color: #ffd21f;
 }
 
 .aleatoire {
-  border: 2px solid rgba(154, 63, 255, 0.48);
+  border: 2px solid #ff7a88;
   box-shadow: 0 0 24px rgba(154, 63, 255, 0.12);
   background: linear-gradient(180deg, rgba(70, 18, 105, 0.35), rgba(40, 10, 80, 0.42));
 }
 
 .aleatoire .quest-title,
 .aleatoire .quest-subtitle {
-  color: #c58cff;
+  color: #ff0099;
 }
 
 .magique {
@@ -519,7 +525,7 @@ color: #ffd21f;
   }
 
   .big-title {
-    font-size: 2.8rem;
+    font-size: 4.8rem;
   }
 
   .subtitle {

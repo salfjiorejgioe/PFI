@@ -542,6 +542,7 @@ $pvPercent = max(0, min(100, $pointsVie));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enigma</title>
     <link rel="stylesheet" href="public/css/enigma.css">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -607,7 +608,7 @@ $pvPercent = max(0, min(100, $pointsVie));
             <a class="quest-card moyenne" href="enigme.php?piger=M">
                 <span class="quest-icon"><img class="quest-icon-img" src="image-site/blue_skull.png" alt=""></span>
                 <div class="quest-title">Quête Moyenne</div>
-                <div class="quest-subtitle">Un défi équilibré</div>
+                <div class="quest-subtitle">Pour les aventuriers curieux</div>
             </a>
 
             <a class="quest-card difficile" href="enigme.php?piger=D">
