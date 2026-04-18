@@ -8,12 +8,14 @@ if (!function_exists('h')) {
 }
 
 
+
+
+
 function filtre_potion_heal($idItem){
     // verifier si la desctiption contient %soigne%, %soin%, %Soigne%, %Soin%, etc
     // dans la description
-    //
-    //
-
+    
+    
 
 
 
