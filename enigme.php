@@ -599,31 +599,33 @@ $pvPercent = max(0, min(100, $pointsVie));
 
         <div class="quest-grid">
             <a class="quest-card facile" href="enigme.php?piger=F">
-                <span class="quest-icon">✨</span>
+                <span class="quest-icon"><img class="quest-icon-img" src="image-site/base_skull.png" alt=""></span>
                 <div class="quest-title">Quête Facile</div>
                 <div class="quest-subtitle">Pour les aventuriers prudents</div>
             </a>
 
             <a class="quest-card moyenne" href="enigme.php?piger=M">
-                <span class="quest-icon">🔥</span>
+                <span class="quest-icon"><img class="quest-icon-img" src="image-site/blue_skull.png" alt=""></span>
                 <div class="quest-title">Quête Moyenne</div>
                 <div class="quest-subtitle">Un défi équilibré</div>
             </a>
 
             <a class="quest-card difficile" href="enigme.php?piger=D">
-                <span class="quest-icon">💀</span>
+                <span class="quest-icon"><img class="quest-icon-img" src="image-site/purple_skull.png" alt=""></span>
                 <div class="quest-title">Quête Difficile</div>
                 <div class="quest-subtitle">Seulement pour les courageux</div>
             </a>
 
             <a class="quest-card aleatoire" href="enigme.php?piger=alea">
-                <span class="quest-icon">🎲</span>
+                <span class="quest-icon">
+                    <img class="quest-icon-img" src="image-site/pink_random.png" alt="">
+                </span>
                 <div class="quest-title">Quête Aléatoire</div>
                 <div class="quest-subtitle">Laissez le destin décider</div>
             </a>
 
             <a class="quest-card magique" href="enigme.php?piger=magique">
-                <span class="quest-icon">🔮</span>
+                <span class="quest-icon"><img class="quest-icon-img" src="image-site/scroll.png" alt=""></span>
                 <div class="quest-title">Quête Magique</div>
                 <div class="quest-subtitle">Pour devenir mage</div>
             </a>

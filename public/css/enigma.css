@@ -210,7 +210,11 @@ progress::-moz-progress-bar {
 }
 
 .quest-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
   text-decoration: none;
   padding: 34px 28px;
   border-radius: 18px;
@@ -237,10 +241,19 @@ progress::-moz-progress-bar {
 }
 
 .quest-icon {
-  font-size: 3rem;
-  display: block;
-  margin-bottom: 18px;
-  filter: brightness(1.2);
+ width: 100%;
+    display: flex;
+    justify-content: center; /* centre l'image */
+    align-items: center;
+    margin-bottom: 12px;
+  
+}
+.quest-icon-img {
+width: 64px;
+    height: 64px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    display: block;
 }
 
 .quest-title {
@@ -256,25 +269,28 @@ progress::-moz-progress-bar {
 }
 
 .facile {
-  border: 2px solid rgba(0, 255, 145, 0.42);
-  box-shadow: 0 0 24px rgba(0, 255, 145, 0.08);
-  background: linear-gradient(180deg, rgba(23, 63, 90, 0.22), rgba(15, 20, 70, 0.35));
+  border: 2px solid rgba(255, 153, 0, 0.35);
+  box-shadow: 0 0 24px rgba(255, 153, 0, 0.08);
+  background: linear-gradient(180deg, rgba(90, 35, 65, 0.28), rgba(65, 20, 70, 0.36));
+ 
 }
 
 .facile .quest-title,
 .facile .quest-subtitle {
-  color: #65ffae;
+color: #ffd21f;
 }
 
 .moyenne {
-  border: 2px solid rgba(255, 153, 0, 0.35);
-  box-shadow: 0 0 24px rgba(255, 153, 0, 0.08);
-  background: linear-gradient(180deg, rgba(90, 35, 65, 0.28), rgba(65, 20, 70, 0.36));
+  
+   border: 2px solid rgba(0, 255, 145, 0.42);
+  box-shadow: 0 0 24px rgba(0, 255, 145, 0.08);
+  background: linear-gradient(180deg, rgba(23, 63, 90, 0.22), rgba(15, 20, 70, 0.35));
 }
 
 .moyenne .quest-title,
 .moyenne .quest-subtitle {
-  color: #ffd21f;
+  
+    color: #65ffae;
 }
 
 .difficile {
