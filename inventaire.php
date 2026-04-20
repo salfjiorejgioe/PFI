@@ -316,6 +316,10 @@ foreach ($itemsInventaire as $item) {
                   <p>Quantité possédée : <?php echo (int) $item['quantiteInventaire']; ?></p>
                   <p>Prix unitaire : <?php echo (int) $item['prix']; ?></p>
                 </a>
+                <?php
+                require_once 'helpers.php';
+                potion_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
+                ?>
                 <form method="post">
                   <input type="hidden" name="idItem" value="<?php echo (int) $item['idItem']; ?>">
                   <input type="hidden" name="typeItem" value="<?php echo h($item['typeItem']); ?>">
@@ -325,10 +329,6 @@ foreach ($itemsInventaire as $item) {
                     <?php echo (int) $item['prix'] * 0.6; ?> or</button>
 
                 </form>
-                <?php
-                require_once 'helpers.php';
-                potion_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
-                ?>
               </div>
             <?php endforeach; ?>
           </div>
@@ -355,6 +355,10 @@ foreach ($itemsInventaire as $item) {
                   <p>Quantité possédée : <?php echo (int) $item['quantiteInventaire']; ?></p>
                   <p>Prix unitaire : <?php echo (int) $item['prix']; ?></p>
                 </a>
+                <?php
+                require_once 'helpers.php';
+                sort_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
+                ?>
                 <form method="post">
                   <input type="hidden" name="idItem" value="<?php echo (int) $item['idItem']; ?>">
                   <input type="hidden" name="typeItem" value="<?php echo h($item['typeItem']); ?>">
@@ -365,10 +369,6 @@ foreach ($itemsInventaire as $item) {
                     <?php echo (int) $item['prix'] - (int) $item['rarete'] * 5 + 5; ?> or</button>
 
                 </form>
-                <?php
-                require_once 'helpers.php';
-                sort_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
-                ?>
               </div>
             <?php endforeach; ?>
           </div>

@@ -61,7 +61,7 @@ function echo_Heal($quantite_heal, $idItem){
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
             <input type="hidden" name="healing" value="' . $quantite_heal . '">
-            <input type="submit" name="action" value="Utiliser item de soin"/>
+            <input type="submit" name="action" value="Utiliser item de soin" class="btn-panier btn-vider" style="background: green"/>
         </form>
     ';
 }
