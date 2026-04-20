@@ -1,5 +1,5 @@
 <?php
-require_once 'bd.php';
+require_once 'db.php';
 
 if (!function_exists('h')) {
     function h($texte) {
@@ -8,40 +8,88 @@ if (!function_exists('h')) {
 }
 
 
+if (isset($_SESSION['user'])) {
+    $joueur_id = $_SESSION['user']['idJoueur'];
+    $joueur_alias = $_SESSION['user']['alias'];
 
+    $joueur_est_mage = $_SESSION['user']['estMage'];
+    $pointsVie = $_SESSION['user']['pointsVie'];
 
+}
 
-function filtre_potion_heal($idItem){
-    // verifier si la desctiption contient %soigne%, %soin%, %Soigne%, %Soin%, etc
-    // dans la description
-    
-    
+function sort_heal($pdo, $idItem, $quantiteInventaire){
+    $sql = "SELECT s.*, i.nom, t.pvRetire
+            FROM Sorts s
+            JOIN Items i ON s.idItem = i.idItem
+            JOIN TypeSorts t ON s.typeSort = t.typeSort
+            WHERE s.idItem = :idItem";
 
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['idItem' => $idItem]);
+    $sort = $stmt->fetch();
 
+    if ($sort && $sort['typeSort'] === 'H') {
+        $heal = -$sort['pvRetire'];
+        echo_Heal($heal, $idItem);
+    }
+}
 
-    // verifier le nombre décrit dans la description ("Soignera 20 pv):
-    // filtrer les nombres et déposer dans un array
-    // mettre les nombres toString et incrémenter dans un string
-    // toInt le string pour obtenir un nombre.
+function potion_heal($pdo, $idItem, $quantiteInventaire){
+    $sql = "SELECT p.*, i.nom 
+            FROM Potions p
+            JOIN Items i ON p.idItem = i.idItem
+            WHERE p.idItem = :idItem";
 
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['idItem' => $idItem]);
+    $potion = $stmt->fetch();
+
+    if ($potion) {
+        $description = $potion['effet'];
+
+        if (preg_match('/soin|soigne/i', $description)) {
+            if (preg_match('/\d+/', $description, $matches)) {
+                $heal = (int)$matches[0];
+                echo_Heal($heal, $idItem);
+            }
+        }
+    }
+}
+
+function echo_Heal($quantite_heal, $idItem){
     echo '
-         <form method="post">
+        <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
-            <input type="hidden" name="Healing" value="' . $healing . '">
-            <input type="submit" name="action" value="Utiliser"/>
+            <input type="hidden" name="healing" value="' . $quantite_heal . '">
+            <input type="submit" name="action" value="Utiliser item de soin"/>
         </form>
-    
-    
     ';
-
 }
 
 
 
+//sera appelé dans la page d'affichage des items de soins
+function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
 
+    // Update DB
+    $sql = "UPDATE Joueurs 
+            SET pointsVie = pointsVie + :heal
+            WHERE idJoueur = :idJoueur";
 
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        'heal' => $modification_PV,
+        'idJoueur' => $idJoueur
+    ]);
 
-function ajouterPvSorts($idItem){
-    // verifier si l'
+    $stmt = $pdo->prepare("
+        SELECT pointsVie
+        FROM Joueurs
+        WHERE idJoueur = ?
+    ");
+    $stmt->execute([$idJoueur]);
+    $joueur = $stmt->fetch();
 
+    //session update
+    $_SESSION['user']['pointsVie'] = (int)$joueur['pointsVie'];
 }

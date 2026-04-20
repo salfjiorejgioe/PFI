@@ -21,6 +21,58 @@ if (
 $idJoueur = (int) $_SESSION['user']['idJoueur'];
 
 if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+  if ($_POST['action'] === 'Utiliser item de soin') {
+    try {
+      $pdo->beginTransaction();
+
+      $heal = (int) $_POST['healing'];
+      $idItem = (int) $_POST['idItem'];
+
+      // Heal le joueur
+      require_once 'helpers.php';
+      modifier_Pv_joueur_connecte($pdo, $idJoueur, $heal);
+
+      // 🔍 récupérer la vraie quantité en DB
+      $stmt = $pdo->prepare("
+    SELECT quantiteInventaire
+    FROM Inventaires
+    WHERE idJoueur = ? AND idItem = ?
+");
+      $stmt->execute([$idJoueur, $idItem]);
+      $inventaire = $stmt->fetch();
+
+      if (!$inventaire) {
+        $pdo->rollBack();
+        exit; // ou gérer l'erreur proprement
+      }
+
+      $quantite = (int) $inventaire['quantiteInventaire'];
+
+      // Retirer 1 item
+      if ($quantite > 1) {
+        $stmt = $pdo->prepare("
+        UPDATE Inventaires
+        SET quantiteInventaire = quantiteInventaire - 1
+        WHERE idJoueur = ? AND idItem = ?
+    ");
+        $stmt->execute([$idJoueur, $idItem]);
+      } else {
+        $stmt = $pdo->prepare("
+        DELETE FROM Inventaires
+        WHERE idJoueur = ? AND idItem = ?
+    ");
+        $stmt->execute([$idJoueur, $idItem]);
+      }
+
+      $pdo->commit();
+
+      header("Location: " . $_SERVER['PHP_SELF']);
+      exit();
+
+    } catch (Exception $e) {
+      $pdo->rollBack();
+    }
+  }
 
   if ($_POST['action'] === 'Vendre item') {
     try {
@@ -39,7 +91,7 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
             WHERE idItem = ?
       ");
       $stmt->execute([$_POST['idItem']]);
-      
+
       //modifier quantite possede ou retirer de l'inventaire
       if ($_POST['quantiteInventaire'] > 1) {
         $stmt = $pdo->prepare("
@@ -271,7 +323,12 @@ foreach ($itemsInventaire as $item) {
                   <input type="hidden" name="quantiteInventaire" value="<?php echo (int) $item['quantiteInventaire']; ?>">
                   <button type="submit" name="action" value="Vendre item" class="btn-panier btn-vider">Vendre
                     <?php echo (int) $item['prix'] * 0.6; ?> or</button>
+
                 </form>
+                <?php
+                require_once 'helpers.php';
+                potion_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
+                ?>
               </div>
             <?php endforeach; ?>
           </div>
@@ -306,7 +363,12 @@ foreach ($itemsInventaire as $item) {
                   <input type="hidden" name="quantiteInventaire" value="<?php echo (int) $item['quantiteInventaire']; ?>">
                   <button type="submit" name="action" value="Vendre item" class="btn-panier btn-vider">Vendre
                     <?php echo (int) $item['prix'] - (int) $item['rarete'] * 5 + 5; ?> or</button>
+
                 </form>
+                <?php
+                require_once 'helpers.php';
+                sort_heal($pdo, $item['idItem'], $item['quantiteInventaire']);
+                ?>
               </div>
             <?php endforeach; ?>
           </div>
