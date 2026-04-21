@@ -448,6 +448,12 @@ table {
   cursor: pointer;
   white-space: nowrap;
 }
+.btn-add.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #555;
+    border: none;
+}
 
 .btn-add:hover {
   background: rgba(0, 0, 0, 0.55);

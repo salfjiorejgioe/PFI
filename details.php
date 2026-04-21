@@ -122,9 +122,33 @@ if ($idItem <= 0) {
                     <p>PV retirés au lanceur : <?php echo (int) $item['pvRetire']; ?></p>
                 <?php endif; ?>
 
-                <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">
-                    Ajouter au panier
-                </button>
+                <?php
+                $peutAjouter = true;
+                $messageBouton = "Ajouter au panier";
+
+                if ((int) $item['quantiteStock'] <= 0) {
+                    $peutAjouter = false;
+                    $messageBouton = "Rupture de stock";
+                }
+
+                if (
+                    $item['typeItem'] === 'S' &&
+                    (!isset($_SESSION['user']['estMage']) || (int) $_SESSION['user']['estMage'] !== 1)
+                ) {
+                    $peutAjouter = false;
+                    $messageBouton = "Réservé aux mages";
+                }
+                ?>
+
+                <?php if ($peutAjouter): ?>
+                    <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">
+                        Ajouter au panier
+                    </button>
+                <?php else: ?>
+                    <button class="btn-add disabled" disabled>
+                        <?php echo h($messageBouton); ?>
+                    </button>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </main>
@@ -306,22 +330,22 @@ if ($idItem <= 0) {
                 });
             }
             document.getElementById('btn-buy-cart').addEventListener('click', function (e) {
-    e.preventDefault();
+                e.preventDefault();
 
-    fetch('panier.php', {
-        method: 'POST'
-    })
-    .then(r => r.json())
-    .then(data => {
-        alert(data.message);
-        if (data.success) {
-            chargerPanier();
-        }
-    })
-    .catch(() => {
-        alert("Erreur lors de l'achat.");
-    });
-});
+                fetch('panier.php', {
+                    method: 'POST'
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.success) {
+                            chargerPanier();
+                        }
+                    })
+                    .catch(() => {
+                        alert("Erreur lors de l'achat.");
+                    });
+            });
 
             if (btnClearCart) {
                 btnClearCart.addEventListener('click', function () {
