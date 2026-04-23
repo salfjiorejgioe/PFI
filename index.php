@@ -109,16 +109,7 @@ function afficherSection($titre, $listeItems)
             <label><input type="checkbox" value="sorts"> Sorts</label>
         </section>
 
-        <section>
-            <h3>Conversion de l'unité</h3>
-            <table id="conversion-monnaie">
-                <tr>
-                    <td>1 Or = La base</td>
-                    <td>10 Argent = 1 Or</td>
-                    <td>10 Bronze = 1 Argent</td>
-                </tr>
-            </table>
-        </section>
+       
 
         <?php afficherSection('Armes', $armes); ?>
         <?php afficherSection('Armures', $armures); ?>

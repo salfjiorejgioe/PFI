@@ -62,17 +62,27 @@ function obtenirArticlesPanier($pdo) // obtenir tous les articles du panier du j
     }
 }
 
-function ajouter_objet_panier($pdo, $idItem) // ajouter nombre optionnel?
-{ // ajoute +1 objet au panier selon l'id de l'item
+function ajouter_objet_panier($pdo, $idItem)
+{
     if (!isset($_SESSION['user']['idJoueur'])) {
-        return false; // sécurité
+        return false;
     }
+
     $joueur_id = $_SESSION['user']['idJoueur'];
+    $estMage = isset($_SESSION['user']['estMage']) ? (int)$_SESSION['user']['estMage'] : 0;
 
     $info_item = obtenirArticle($pdo, $idItem);
 
-    if (!$info_item || $info_item["estDisponible"] != 1 || $info_item['quantiteStock'] <= 0) { //item non-disponible. Impossible d'ajouter
-        //echo "<script>alert('Ajout d'item impossible');</script>";
+    if (
+        !$info_item ||
+        (int)$info_item["estDisponible"] !== 1 ||
+        (int)$info_item['quantiteStock'] <= 0
+    ) {
+        return false;
+    }
+
+    // Bloquer seulement les sorts pour les non-mages
+    if ($info_item['typeItem'] === 'S' && $estMage !== 1) {
         return false;
     }
     $sql = "SELECT quantitePanier
@@ -380,6 +390,14 @@ function modifier_quantite_panier($pdo, $idItem, $quantite)
     }
 
     $info_item = obtenirArticle($pdo, $idItem);
+    $estMage = isset($_SESSION['user']['estMage']) ? (int)$_SESSION['user']['estMage'] : 0;
+
+if ($info_item['typeItem'] === 'S' && $estMage !== 1) {
+    return [
+        "success" => false,
+        "message" => "Seuls les mages peuvent ajouter des sorts au panier"
+    ];
+}
 
     if (!$info_item) {
         return [
