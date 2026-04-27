@@ -47,7 +47,7 @@ function potion_heal($pdo, $idItem, $quantiteInventaire){
     if ($potion) {
         $description = $potion['effet'];
 
-        if (preg_match('/soin|soigne/i', $description)) {
+        if (preg_match('/soin|soigne|heal/i', $description)) {
             if (preg_match('/\d+/', $description, $matches)) {
                 $heal = (int)$matches[0];
                 echo_Heal($heal, $idItem);
