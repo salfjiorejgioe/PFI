@@ -4,6 +4,9 @@ require_once 'db.php';
 
 $errors = [];
 
+$auth_message = $_SESSION['auth_message'] ?? '';
+unset($_SESSION['auth_message']);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $alias    = trim($_POST['alias'] ?? '');
     $password = trim($_POST['password'] ?? '');
@@ -13,15 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
 
         $stmt = $pdo->prepare("
-            SELECT idJoueur,
-                   alias,
-                   motDePasse,
-                   gold,
-                   argent,
-                   bronze,
-                   estMage,
-                   estAdmin,
-                   pointsVie
+            SELECT
+                idJoueur,
+                alias,
+                motDePasse,
+                gold,
+                argent,
+                bronze,
+                estMage,
+                estAdmin,
+                pointsVie,
+                courriel,
+                emailVerifie
             FROM Joueurs
             WHERE alias = :alias
             LIMIT 1
@@ -30,25 +36,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([':alias' => $alias]);
         $joueur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Vérification du mot de passe avec password_verify
+        // Vérification du mot de passe
         if (!$joueur || !password_verify($password, $joueur['motDePasse'])) {
             $errors[] = "Alias ou mot de passe invalide.";
+        } elseif ((int)$joueur['emailVerifie'] !== 1) {
+            // Compte non vérifié → on redirige vers la page de vérification
+            $_SESSION['verification_email'] = $joueur['courriel'];
+            $_SESSION['verification_alias'] = $joueur['alias'];
+            $_SESSION['auth_message'] = "Veuillez vérifier votre courriel avant de vous connecter.";
+            header('Location: verify_notice.php');
+            exit;
         } else {
-            // On normalise tout dans $_SESSION['user']
+            // Connexion OK et email vérifié → on enregistre tout dans la session
             $_SESSION['user'] = [
-                'idJoueur' => (int)$joueur['idJoueur'],
-                'alias'    => $joueur['alias'],
+                'idJoueur'  => (int)$joueur['idJoueur'],
+                'alias'     => $joueur['alias'],
 
-                'or'      => (int)$joueur['gold'],
-                'argent'  => (int)$joueur['argent'],
-                'bronze'  => (int)$joueur['bronze'],
+                'or'        => (int)$joueur['gold'],
+                'argent'    => (int)$joueur['argent'],
+                'bronze'    => (int)$joueur['bronze'],
 
-                'estMage'  => (int)$joueur['estMage'],
-                'estAdmin' => (int)$joueur['estAdmin'],
-                'pointsVie' => (int)$joueur['pointsVie'] ?? 0,
+                'estMage'   => (int)$joueur['estMage'],
+                'estAdmin'  => (int)$joueur['estAdmin'],
+                'pointsVie' => (int)$joueur['pointsVie'],
+
+                'courriel'      => $joueur['courriel'],
+                'emailVerifie'  => (int)$joueur['emailVerifie'],
             ];
 
-            header('Location: index.php');
+            if (!empty($_SESSION['redirect_after_login'])) {
+                $dest = $_SESSION['redirect_after_login'];
+                unset($_SESSION['redirect_after_login']);
+                header("Location: " . $dest);
+            } else {
+                header('Location: index.php');
+            }
             exit;
         }
     }
@@ -68,9 +90,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </header>
 
 <main class="darquest-login auth-container">
+    <?php if ($auth_message): ?>
+        <div class="error">
+            <p><?php echo htmlspecialchars($auth_message); ?></p>
+        </div>
+    <?php endif; ?>
+
     <?php if ($errors): ?>
         <div class="error">
-            <?php foreach ($errors as $e) echo "<p>".htmlspecialchars($e)."</p>"; ?>
+            <?php foreach ($errors as $e): ?>
+                <p><?php echo htmlspecialchars($e); ?></p>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 
@@ -85,6 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <p>Pas de compte ? <a href="signup.php">Créer un compte</a></p>
+
+    <form action="index.php" method="get" style="margin-top: 1rem;">
+        <button type="submit">Retour à la boutique</button>
+    </form>
 </main>
 </body>
 </html>
