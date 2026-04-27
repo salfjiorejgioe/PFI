@@ -51,13 +51,13 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
           WHERE idJoueur = ? AND idItem = ?
         ");
         $stmt->execute([$idJoueur, $idItem]);
-      } else {
-        $stmt = $pdo->prepare("
-          DELETE FROM Inventaires
-          WHERE idJoueur = ? AND idItem = ?
-        ");
-        $stmt->execute([$idJoueur, $idItem]);
-      }
+      } //else {
+      //   $stmt = $pdo->prepare("
+      //     DELETE FROM Inventaires
+      //     WHERE idJoueur = ? AND idItem = ?
+      //   ");
+      //   $stmt->execute([$idJoueur, $idItem]);
+      // }
 
       $pdo->commit();
       header("Location: " . $_SERVER['PHP_SELF']);
@@ -500,6 +500,7 @@ function prixVenteItem($item)
           <?php else: ?>
             <div class="items-grid">
               <?php foreach ($listeItems as $item): ?>
+                <?php if( (int) $item['quantiteInventaire'] > 0): ?> <!-- Condition affichage quantiteitem > 0-->
                 <?php $prixVente = prixVenteItem($item); ?>
                 <div class="item-card" id="item-<?php echo (int) $item['idItem']; ?>">
                   <a href="details.php?id=<?php echo (int) $item['idItem']; ?>">
@@ -562,6 +563,7 @@ function prixVenteItem($item)
                     </div>
                   </form>
                 </div>
+                <?php endif; ?>
               <?php endforeach; ?>
             </div>
           <?php endif; ?>

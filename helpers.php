@@ -71,6 +71,26 @@ function echo_Heal($quantite_heal, $idItem){
 //sera appelé dans la page d'affichage des items de soins
 function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
 
+    // working on it, not done---------------------------------------------------
+    $stmt = $pdo->prepare("
+        SELECT pointsVie
+        FROM Joueurs
+        WHERE idJoueur = ?
+    ");
+    $stmt->execute([$idJoueur]);
+    $joueur = $stmt->fetch();
+    $currentHealth = (int)$joueur['pointsVie'];
+    $pv = $currentHealth + $modification_PV;
+    // if(($currentHealth + $modification_PV) > 50){
+    //     $txt = "PV dépassés:'" . $pv ;
+    //     error_log("Debug message: variable x is " . $txt);
+    //     exit();
+
+    // }
+
+    //---------------------------------------------------------------------------
+
+
     // Update DB
     $sql = "UPDATE Joueurs 
             SET pointsVie = pointsVie + :heal
