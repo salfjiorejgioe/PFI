@@ -28,43 +28,51 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
       $idItem = (int) $_POST['idItem'];
 
       $healingSuccess = modifier_Pv_joueur_connecte($pdo, $idJoueur, $heal);
-      if($healingSuccess){
+
+      if ($healingSuccess) {
         $stmt = $pdo->prepare("
         SELECT quantiteInventaire
         FROM Inventaires
         WHERE idJoueur = ? AND idItem = ?
       ");
-      $stmt->execute([$idJoueur, $idItem]);
-      $inventaire = $stmt->fetch();
+        $stmt->execute([$idJoueur, $idItem]);
+        $inventaire = $stmt->fetch();
 
-      if (!$inventaire) {
-        $pdo->rollBack();
-        exit;
-      }
+        if (!$inventaire) {
+          $pdo->rollBack();
+          exit;
+        }
 
-      $quantite = (int) $inventaire['quantiteInventaire'];
+        $quantite = (int) $inventaire['quantiteInventaire'];
 
-      if ($quantite >= 1) {
-        $stmt = $pdo->prepare("
+        if ($quantite >= 1) {
+          $stmt = $pdo->prepare("
           UPDATE Inventaires
           SET quantiteInventaire = quantiteInventaire - 1
           WHERE idJoueur = ? AND idItem = ?
         ");
-        $stmt->execute([$idJoueur, $idItem]);
-      } 
-      // supprimer le sort/potion de l'inventaire après utilisation
-      //else {
-      //   $stmt = $pdo->prepare("
-      //     DELETE FROM Inventaires
-      //     WHERE idJoueur = ? AND idItem = ?
-      //   ");
-      //   $stmt->execute([$idJoueur, $idItem]);
-      // }
+          $stmt->execute([$idJoueur, $idItem]);
+        }
+
+
+
+        // supprimer le sort/potion de l'inventaire après utilisation
+        //else {
+        //   $stmt = $pdo->prepare("
+        //     DELETE FROM Inventaires
+        //     WHERE idJoueur = ? AND idItem = ?
+        //   ");
+        //   $stmt->execute([$idJoueur, $idItem]);
+        // }
+
+
+        $_SESSION['message_inventaire'] = "Healed";
+        $_SESSION['message_inventaire_success'] = true;
+      } elseif (!$healingSuccess) {
+        $_SESSION['message_inventaire'] = "Non tu peux pas heal idiot";
+        $_SESSION['message_inventaire_success'] = false;
       }
-      elseif(!$healingSuccess){
-        $message = "Non tu peux pas heal idiot"
-      }
-      
+
 
       $pdo->commit();
       header("Location: " . $_SERVER['PHP_SELF']);
@@ -184,7 +192,7 @@ function prixVenteItem($item)
       overflow: hidden;
     }
 
-    .item-card > a {
+    .item-card>a {
       display: block;
       text-decoration: none;
     }
@@ -215,18 +223,18 @@ function prixVenteItem($item)
       color: white;
       box-shadow:
         0 8px 24px rgba(230, 57, 70, 0.22),
-        inset 0 1px 0 rgba(255,255,255,0.18);
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
     .sell-panel {
       margin-top: auto;
       padding: 12px;
       border-radius: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+      border: 1px solid rgba(255, 255, 255, 0.10);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.06),
-        0 8px 24px rgba(0,0,0,0.18);
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 8px 24px rgba(0, 0, 0, 0.18);
     }
 
     .sell-topline {
@@ -247,7 +255,7 @@ function prixVenteItem($item)
 
     .sell-owned {
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.72);
+      color: rgba(255, 255, 255, 0.72);
     }
 
     .vente-ligne {
@@ -264,14 +272,14 @@ function prixVenteItem($item)
       min-height: 42px;
       padding: 0 10px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
     }
 
     .qte-prefix {
       font-size: 0.82rem;
       font-weight: 700;
-      color: rgba(255,255,255,0.84);
+      color: rgba(255, 255, 255, 0.84);
       white-space: nowrap;
     }
 
@@ -298,7 +306,7 @@ function prixVenteItem($item)
     .vente-total {
       margin: 10px 0 0 0;
       padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.10);
+      border-top: 1px solid rgba(255, 255, 255, 0.10);
       color: #ffe08a;
       font-weight: 800;
       font-size: 0.9rem;
@@ -314,7 +322,7 @@ function prixVenteItem($item)
       justify-content: center;
       padding: 20px;
       background:
-        radial-gradient(circle at top, rgba(255,120,80,0.10), transparent 35%),
+        radial-gradient(circle at top, rgba(255, 120, 80, 0.10), transparent 35%),
         rgba(5, 5, 8, 0.72);
       backdrop-filter: blur(8px);
       z-index: 9999;
@@ -330,11 +338,11 @@ function prixVenteItem($item)
       overflow: hidden;
       border-radius: 22px;
       padding: 0;
-      background: linear-gradient(180deg, rgba(37,20,20,0.98), rgba(19,19,23,0.98));
-      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(37, 20, 20, 0.98), rgba(19, 19, 23, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.10);
       box-shadow:
-        0 24px 80px rgba(0,0,0,0.50),
-        0 0 0 1px rgba(255,255,255,0.04) inset;
+        0 24px 80px rgba(0, 0, 0, 0.50),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
       color: white;
       animation: modalPop 180ms ease-out;
     }
@@ -344,6 +352,7 @@ function prixVenteItem($item)
         transform: translateY(10px) scale(0.98);
         opacity: 0;
       }
+
       to {
         transform: translateY(0) scale(1);
         opacity: 1;
@@ -389,8 +398,8 @@ function prixVenteItem($item)
       align-items: center;
       padding: 14px;
       border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .modal-item-name {
@@ -401,14 +410,14 @@ function prixVenteItem($item)
     .modal-item-meta {
       margin-top: 6px;
       font-size: 0.86rem;
-      color: rgba(255,255,255,0.72);
+      color: rgba(255, 255, 255, 0.72);
     }
 
     .modal-gain-badge {
       padding: 10px 12px;
       border-radius: 999px;
-      background: linear-gradient(135deg, rgba(255,208,116,0.16), rgba(255,149,79,0.16));
-      border: 1px solid rgba(255,208,116,0.28);
+      background: linear-gradient(135deg, rgba(255, 208, 116, 0.16), rgba(255, 149, 79, 0.16));
+      border: 1px solid rgba(255, 208, 116, 0.28);
       color: #ffe6a3;
       font-weight: 900;
       white-space: nowrap;
@@ -420,7 +429,7 @@ function prixVenteItem($item)
       border-radius: 14px;
       background: rgba(215, 52, 73, 0.10);
       border: 1px solid rgba(215, 52, 73, 0.22);
-      color: rgba(255,255,255,0.86);
+      color: rgba(255, 255, 255, 0.86);
       font-size: 0.9rem;
       line-height: 1.45;
     }
@@ -433,10 +442,10 @@ function prixVenteItem($item)
     }
 
     .btn-annuler {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
       color: white;
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .btn-confirmer {
@@ -444,7 +453,7 @@ function prixVenteItem($item)
       color: white;
       box-shadow:
         0 8px 24px rgba(230, 57, 70, 0.24),
-        inset 0 1px 0 rgba(255,255,255,0.16);
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
 
     @media (max-width: 640px) {
@@ -497,6 +506,17 @@ function prixVenteItem($item)
         'Sorts' => $sorts
       ];
       ?>
+      <div>
+        <?php if (isset($_SESSION['message_inventaire'])): ?>
+          <div id="messagePanier"
+            class="message-panier <?php echo $_SESSION['message_inventaire_success'] ? true : false; ?>">
+            <?php echo htmlspecialchars($_SESSION['message_inventaire']); ?>
+          </div>
+          <?php unset($_SESSION['message_inventaire'], $_SESSION['message_inventaire_success']); ?>
+        <?php else: ?>
+          <div id="messagePanier" class="message-panier" style="display:none;"></div>
+        <?php endif; ?>
+      </div>
 
       <?php foreach ($sectionsData as $titreSection => $listeItems): ?>
         <section class="section-items">
@@ -507,69 +527,61 @@ function prixVenteItem($item)
           <?php else: ?>
             <div class="items-grid">
               <?php foreach ($listeItems as $item): ?>
-                <?php if( (int) $item['quantiteInventaire'] > 0): ?> <!-- Condition affichage quantiteitem > 0-->
-                <?php $prixVente = prixVenteItem($item); ?>
-                <div class="item-card" id="item-<?php echo (int) $item['idItem']; ?>">
-                  <a href="details.php?id=<?php echo (int) $item['idItem']; ?>">
-                    <?php if (!empty($item['photo'])): ?>
-                      <img src="<?php echo h($item['photo']); ?>" alt="<?php echo h($item['nom']); ?>">
-                    <?php else: ?>
-                      <div class="item-no-image">Aucune image</div>
+                <?php if ((int) $item['quantiteInventaire'] > 0): ?> <!-- Condition affichage quantiteitem > 0-->
+                  <?php $prixVente = prixVenteItem($item); ?>
+                  <div class="item-card" id="item-<?php echo (int) $item['idItem']; ?>">
+                    <a href="details.php?id=<?php echo (int) $item['idItem']; ?>">
+                      <?php if (!empty($item['photo'])): ?>
+                        <img src="<?php echo h($item['photo']); ?>" alt="<?php echo h($item['nom']); ?>">
+                      <?php else: ?>
+                        <div class="item-no-image">Aucune image</div>
+                      <?php endif; ?>
+
+                      <h3><?php echo h($item['nom']); ?></h3>
+                      <p id="quantite-item-<?php echo (int) $item['idItem']; ?>">
+                        Quantité possédée : <?php echo (int) $item['quantiteInventaire']; ?>
+                      </p>
+                      <p>Prix unitaire : <?php echo (int) $item['prix']; ?></p>
+                    </a>
+
+                    <?php if ($item['typeItem'] == 'P'): ?>
+                      <?php potion_heal($pdo, $item['idItem'], $item['quantiteInventaire']); ?>
                     <?php endif; ?>
 
-                    <h3><?php echo h($item['nom']); ?></h3>
-                    <p id="quantite-item-<?php echo (int) $item['idItem']; ?>">
-                      Quantité possédée : <?php echo (int) $item['quantiteInventaire']; ?>
-                    </p>
-                    <p>Prix unitaire : <?php echo (int) $item['prix']; ?></p>
-                  </a>
+                    <?php if ($item['typeItem'] == 'S'): ?>
+                      <?php sort_heal($pdo, $item['idItem'], $item['quantiteInventaire']); ?>
+                    <?php endif; ?>
 
-                  <?php if ($item['typeItem'] == 'P'): ?>
-                    <?php potion_heal($pdo, $item['idItem'], $item['quantiteInventaire']); ?>
-                  <?php endif; ?>
+                    <form method="post" class="form-vente-auto" data-iditem="<?php echo (int) $item['idItem']; ?>">
+                      <input type="hidden" name="idItem" value="<?php echo (int) $item['idItem']; ?>">
 
-                  <?php if ($item['typeItem'] == 'S'): ?>
-                    <?php sort_heal($pdo, $item['idItem'], $item['quantiteInventaire']); ?>
-                  <?php endif; ?>
-
-                  <form method="post" class="form-vente-auto" data-iditem="<?php echo (int) $item['idItem']; ?>">
-                    <input type="hidden" name="idItem" value="<?php echo (int) $item['idItem']; ?>">
-
-                    <div class="sell-panel">
-                      <div class="sell-topline">
-                        <span class="sell-label">Vente</span>
-                        <span class="sell-owned">Max : <?php echo (int) $item['quantiteInventaire']; ?></span>
-                      </div>
-
-                      <div class="vente-ligne">
-                        <label for="vente_<?php echo (int) $item['idItem']; ?>" class="sr-only">Quantité à vendre</label>
-
-                        <div class="qte-box">
-                          <span class="qte-prefix">Qté</span>
-                          <input
-                            id="vente_<?php echo (int) $item['idItem']; ?>"
-                            class="input-vente"
-                            type="number"
-                            name="quantiteVente"
-                            min="1"
-                            max="<?php echo (int) $item['quantiteInventaire']; ?>"
-                            value="1"
-                            data-iditem="<?php echo (int) $item['idItem']; ?>"
-                            data-prixvente="<?php echo (int) $prixVente; ?>"
-                          >
+                      <div class="sell-panel">
+                        <div class="sell-topline">
+                          <span class="sell-label">Vente</span>
+                          <span class="sell-owned">Max : <?php echo (int) $item['quantiteInventaire']; ?></span>
                         </div>
 
-                        <button type="submit" class="btn-panier btn-sell">
-                          Vendre
-                        </button>
-                      </div>
+                        <div class="vente-ligne">
+                          <label for="vente_<?php echo (int) $item['idItem']; ?>" class="sr-only">Quantité à vendre</label>
 
-                      <p class="vente-total" id="vente-total-<?php echo (int) $item['idItem']; ?>">
-                        Gain estimé : <?php echo (int) $prixVente; ?> or
-                      </p>
-                    </div>
-                  </form>
-                </div>
+                          <div class="qte-box">
+                            <span class="qte-prefix">Qté</span>
+                            <input id="vente_<?php echo (int) $item['idItem']; ?>" class="input-vente" type="number"
+                              name="quantiteVente" min="1" max="<?php echo (int) $item['quantiteInventaire']; ?>" value="1"
+                              data-iditem="<?php echo (int) $item['idItem']; ?>" data-prixvente="<?php echo (int) $prixVente; ?>">
+                          </div>
+
+                          <button type="submit" class="btn-panier btn-sell">
+                            Vendre
+                          </button>
+                        </div>
+
+                        <p class="vente-total" id="vente-total-<?php echo (int) $item['idItem']; ?>">
+                          Gain estimé : <?php echo (int) $prixVente; ?> or
+                        </p>
+                      </div>
+                    </form>
+                  </div>
                 <?php endif; ?>
               <?php endforeach; ?>
             </div>
@@ -691,55 +703,55 @@ function prixVenteItem($item)
           method: 'POST',
           body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-          input.disabled = false;
-          fermerModal();
+          .then(response => response.json())
+          .then(data => {
+            input.disabled = false;
+            fermerModal();
 
-          if (!data.success) {
-            afficherMessage(data.message, false);
-            return;
-          }
-
-          const quantiteEl = document.getElementById('quantite-item-' + data.idItem);
-          if (quantiteEl) {
-            quantiteEl.textContent = 'Quantité possédée : ' + data.quantiteRestante;
-          }
-
-          const card = document.getElementById('item-' + data.idItem);
-
-          if (data.quantiteRestante > 0) {
-            input.max = data.quantiteRestante;
-            input.value = 1;
-
-            const totalEl = document.getElementById('vente-total-' + data.idItem);
-            if (totalEl) {
-              totalEl.textContent = 'Gain estimé : ' + data.profitUnitaire + ' or';
+            if (!data.success) {
+              afficherMessage(data.message, false);
+              return;
             }
 
-            const maxLabel = card ? card.querySelector('.sell-owned') : null;
-            if (maxLabel) {
-              maxLabel.textContent = 'Max : ' + data.quantiteRestante;
+            const quantiteEl = document.getElementById('quantite-item-' + data.idItem);
+            if (quantiteEl) {
+              quantiteEl.textContent = 'Quantité possédée : ' + data.quantiteRestante;
             }
-          } else if (card) {
-            card.remove();
-          }
 
-          const goldElement = document.querySelector('.wallet-item.gold .wallet-value');
-          if (goldElement) {
-            goldElement.textContent = data.gold;
-          }
+            const card = document.getElementById('item-' + data.idItem);
 
-          afficherMessage(
-            'Vente confirmée : ' + data.quantiteVendue + ' item(s) pour ' + data.profitTotal + ' or.',
-            true
-          );
-        })
-        .catch(() => {
-          input.disabled = false;
-          fermerModal();
-          afficherMessage('Erreur lors de la vente.', false);
-        });
+            if (data.quantiteRestante > 0) {
+              input.max = data.quantiteRestante;
+              input.value = 1;
+
+              const totalEl = document.getElementById('vente-total-' + data.idItem);
+              if (totalEl) {
+                totalEl.textContent = 'Gain estimé : ' + data.profitUnitaire + ' or';
+              }
+
+              const maxLabel = card ? card.querySelector('.sell-owned') : null;
+              if (maxLabel) {
+                maxLabel.textContent = 'Max : ' + data.quantiteRestante;
+              }
+            } else if (card) {
+              card.remove();
+            }
+
+            const goldElement = document.querySelector('.wallet-item.gold .wallet-value');
+            if (goldElement) {
+              goldElement.textContent = data.gold;
+            }
+
+            afficherMessage(
+              'Vente confirmée : ' + data.quantiteVendue + ' item(s) pour ' + data.profitTotal + ' or.',
+              true
+            );
+          })
+          .catch(() => {
+            input.disabled = false;
+            fermerModal();
+            afficherMessage('Erreur lors de la vente.', false);
+          });
       }
 
       barreRecherche.addEventListener('input', appliquerFiltres);
@@ -819,4 +831,5 @@ function prixVenteItem($item)
 
   <?php include_once 'template/footer.php'; ?>
 </body>
+
 </html>
