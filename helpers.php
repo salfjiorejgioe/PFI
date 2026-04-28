@@ -80,27 +80,41 @@ function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
     $stmt->execute([$idJoueur]);
     $joueur = $stmt->fetch();
     $currentHealth = (int)$joueur['pointsVie'];
+
+
+
+
     $pv = $currentHealth + $modification_PV;
-    // if(($currentHealth + $modification_PV) > 50){
-    //     $txt = "PV dépassés:'" . $pv ;
-    //     error_log("Debug message: variable x is " . $txt);
-    //     exit();
 
-    // }
+    
 
-    //---------------------------------------------------------------------------
-
-
+    
     // Update DB
-    $sql = "UPDATE Joueurs 
+    if(($currentHealth + $modification_PV) > 50){ // if healing exceeds 50 hp
+        $sql = "UPDATE Joueurs 
+            SET pointsVie = :heal
+            WHERE idJoueur = :idJoueur";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+        'heal' => 50,
+        'idJoueur' => $idJoueur
+        ]);
+     }
+
+    
+    else{ // default healing
+
+        $sql = "UPDATE Joueurs 
             SET pointsVie = pointsVie + :heal
             WHERE idJoueur = :idJoueur";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
         'heal' => $modification_PV,
         'idJoueur' => $idJoueur
-    ]);
+        ]);
+    }
+    //---------------------------------------------------------------------------
+    
 
     $stmt = $pdo->prepare("
         SELECT pointsVie
