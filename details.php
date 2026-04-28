@@ -4,359 +4,422 @@ require_once 'db.php';
 
 function h($v)
 {
-    return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-$idItem = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$idItem = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
 $item = null;
+$evaluations = [];
 $error = "";
+$messageAction = "";
+
+$idJoueurConnecte = isset($_SESSION['user']['idJoueur']) ? (int)$_SESSION['user']['idJoueur'] : 0;
+$estAdmin = isset($_SESSION['user']['estAdmin']) && (int)$_SESSION['user']['estAdmin'] === 1;
 
 if ($idItem <= 0) {
     $error = "Item invalide.";
 } else {
     try {
+
+        /*
+            ACTIONS COMMENTAIRES
+            - Admin : peut supprimer n'importe quel commentaire
+            - Joueur : peut modifier ou supprimer seulement son propre commentaire
+        */
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+
+            $action = $_POST['action'];
+            $idJoueurCommentaire = isset($_POST['idJoueur']) ? (int)$_POST['idJoueur'] : 0;
+
+            if ($action === 'delete_comment') {
+
+                if ($estAdmin || $idJoueurConnecte === $idJoueurCommentaire) {
+
+                    $sqlDelete = "
+                        DELETE FROM Evaluations
+                        WHERE idJoueur = ?
+                        AND idItem = ?
+                    ";
+
+                    $stmtDelete = $pdo->prepare($sqlDelete);
+                    $stmtDelete->execute([$idJoueurCommentaire, $idItem]);
+
+                    $messageAction = "Commentaire supprimé.";
+                } else {
+                    $messageAction = "Vous n'avez pas le droit de supprimer ce commentaire.";
+                }
+            }
+
+            if ($action === 'update_comment') {
+
+                if ($idJoueurConnecte === $idJoueurCommentaire) {
+
+                    $nbEtoiles = isset($_POST['nbEtoiles']) ? (int)$_POST['nbEtoiles'] : 0;
+                    $commentaire = isset($_POST['eCommentaire']) ? trim($_POST['eCommentaire']) : "";
+
+                    if ($nbEtoiles < 1 || $nbEtoiles > 5) {
+                        $messageAction = "Le nombre d'étoiles doit être entre 1 et 5.";
+                    } else {
+                        $sqlUpdate = "
+                            UPDATE Evaluations
+                            SET nbEtoiles = ?,
+                                eCommentaire = ?
+                            WHERE idJoueur = ?
+                            AND idItem = ?
+                        ";
+
+                        $stmtUpdate = $pdo->prepare($sqlUpdate);
+                        $stmtUpdate->execute([
+                            $nbEtoiles,
+                            $commentaire,
+                            $idJoueurConnecte,
+                            $idItem
+                        ]);
+
+                        $messageAction = "Commentaire modifié.";
+                    }
+
+                } else {
+                    $messageAction = "Vous n'avez pas le droit de modifier ce commentaire.";
+                }
+            }
+        }
+
+        /*
+            CHARGEMENT ITEM
+        */
         $sql = "
-    SELECT 
-        i.idItem,
-        i.nom,
-        i.quantiteStock,
-        i.prix,
-        i.photo,
-        i.typeItem,
+            SELECT 
+                i.idItem,
+                i.nom,
+                i.quantiteStock,
+                i.prix,
+                i.photo,
+                i.typeItem,
 
-        a.efficacite,
-        a.genre,
-        a.description,
+                a.efficacite,
+                a.genre,
+                a.description,
 
-        ar.matiere,
-        ar.taille,
+                ar.matiere,
+                ar.taille,
 
-        p.effet,
-        p.duree,
+                p.effet,
+                p.duree,
 
-        s.estInstantane,
-        s.rarete,
-        s.typeSort,
+                s.estInstantane,
+                s.rarete,
+                s.typeSort,
 
-        ts.description AS descriptionTypeSort,
-        ts.pDegat,
-        ts.pvRetire
+                ts.description AS descriptionTypeSort,
+                ts.pDegat,
+                ts.pvRetire
 
-    FROM Items i
-    LEFT JOIN Armes a ON i.idItem = a.idItem
-    LEFT JOIN Armures ar ON i.idItem = ar.idItem
-    LEFT JOIN Potions p ON i.idItem = p.idItem
-    LEFT JOIN Sorts s ON i.idItem = s.idItem
-    LEFT JOIN TypeSorts ts ON s.typeSort = ts.typeSort
-    WHERE i.idItem = ?
-";
+            FROM Items i
+
+            LEFT JOIN Armes a
+                ON i.idItem = a.idItem
+
+            LEFT JOIN Armures ar
+                ON i.idItem = ar.idItem
+
+            LEFT JOIN Potions p
+                ON i.idItem = p.idItem
+
+            LEFT JOIN Sorts s
+                ON i.idItem = s.idItem
+
+            LEFT JOIN TypeSorts ts
+                ON s.typeSort = ts.typeSort
+
+            WHERE i.idItem = ?
+        ";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$idItem]);
+
         $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$item) {
             $error = "Item introuvable.";
         }
+
+        /*
+            CHARGEMENT COMMENTAIRES
+        */
+        if ($item) {
+            $sqlEval = "
+                SELECT
+                    e.idJoueur,
+                    e.nbEtoiles,
+                    e.eCommentaire,
+                    j.alias
+                FROM Evaluations e
+                INNER JOIN Joueurs j
+                    ON e.idJoueur = j.idJoueur
+                WHERE e.idItem = ?
+                ORDER BY j.alias
+            ";
+
+            $stmtEval = $pdo->prepare($sqlEval);
+            $stmtEval->execute([$idItem]);
+
+            $evaluations = $stmtEval->fetchAll(PDO::FETCH_ASSOC);
+        }
+
     } catch (PDOException $e) {
         $error = "Erreur lors du chargement.";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails</title>
-    <link rel="stylesheet" href="public/css/style.css">
+<meta charset="UTF-8">
+<title>Détails Item</title>
+<link rel="stylesheet" href="public/css/style.css">
 </head>
 
 <body>
 
-    <?php include_once "template/header.php"; ?>
+<?php include_once "template/header.php"; ?>
 
-    <main>
-        <?php if ($error != ""): ?>
-            <p><?php echo h($error); ?></p>
-        <?php else: ?>
+<main>
 
-            <div class="item-card details-card">
-                <?php if (!empty($item['photo'])): ?>
-                    <img src="<?php echo h($item['photo']); ?>" alt="<?php echo h($item['nom']); ?>">
-                <?php else: ?>
-                    <div class="item-no-image">Aucune image</div>
-                <?php endif; ?>
+<?php if ($error != ""): ?>
 
-                <h2><?php echo h($item['nom']); ?></h2>
-                <p>Prix : <?php echo (int) $item['prix']; ?></p>
-                <p>Stock : <?php echo (int) $item['quantiteStock']; ?></p>
+<p><?php echo h($error); ?></p>
 
-                <?php if ($item['typeItem'] == 'R'): ?>
-                    <p>Type : Armure</p>
-                    <p>Matière : <?php echo h($item['matiere']); ?></p>
-                    <p>Taille : <?php echo h($item['taille']); ?></p>
-                <?php endif; ?>
+<?php else: ?>
 
-                <?php if ($item['typeItem'] == 'A'): ?>
-                    <p>Type : Arme</p>
-                    <p>Efficacité : <?php echo h($item['efficacite']); ?></p>
-                    <p>Genre : <?php echo h($item['genre']); ?></p>
-                    <p>Description : <?php echo h($item['description']); ?></p>
-                <?php endif; ?>
+<?php if ($messageAction != ""): ?>
+<p><?php echo h($messageAction); ?></p>
+<?php endif; ?>
 
-                <?php if ($item['typeItem'] == 'P'): ?>
-                    <p>Type : Potion</p>
-                    <p>Effet : <?php echo h($item['effet']); ?></p>
-                    <p>Durée : <?php echo (int) $item['duree']; ?></p>
-                <?php endif; ?>
+<div class="item-card details-card">
 
-                <?php if ($item['typeItem'] == 'S'): ?>
-                    <p>Type : Sort</p>
-                    <p>Type sort : <?php echo h($item['typeSort']); ?></p>
-                    <p>Description : <?php echo h($item['descriptionTypeSort']); ?></p>
-                    <p>Rareté : <?php echo h($item['rarete']); ?></p>
-                    <p>Instantané : <?php echo ((int) $item['estInstantane'] === 1) ? 'Oui' : 'Non'; ?></p>
-                    <p>Dégâts infligés : <?php echo (int) $item['pDegat']; ?></p>
-                    <p>PV retirés au lanceur : <?php echo (int) $item['pvRetire']; ?></p>
-                <?php endif; ?>
+<?php if (!empty($item['photo'])): ?>
+<img src="<?php echo h($item['photo']); ?>"
+alt="<?php echo h($item['nom']); ?>">
+<?php endif; ?>
 
-                <?php
-                $peutAjouter = true;
-                $messageBouton = "Ajouter au panier";
+<h2><?php echo h($item['nom']); ?></h2>
 
-                if ((int) $item['quantiteStock'] <= 0) {
-                    $peutAjouter = false;
-                    $messageBouton = "Rupture de stock";
-                }
+<p>Prix : <?php echo (int)$item['prix']; ?> or</p>
 
-                if (
-                    $item['typeItem'] === 'S' &&
-                    (!isset($_SESSION['user']['estMage']) || (int) $_SESSION['user']['estMage'] !== 1)
-                ) {
-                    $peutAjouter = false;
-                    $messageBouton = "Réservé aux mages";
-                }
-                ?>
+<p>Stock : <?php echo (int)$item['quantiteStock']; ?></p>
 
-                <?php if ($peutAjouter): ?>
-                    <button class="btn-add" data-item-id="<?php echo (int) $item['idItem']; ?>">
-                        Ajouter au panier
-                    </button>
-                <?php else: ?>
-                    <button class="btn-add disabled" disabled>
-                        <?php echo h($messageBouton); ?>
-                    </button>
-                <?php endif; ?>
-            </div>
+<?php if ($item['typeItem'] == 'A'): ?>
+
+<p>Type : Arme</p>
+<p>Efficacité : <?php echo h($item['efficacite']); ?></p>
+<p>Genre : <?php echo h($item['genre']); ?></p>
+<p>Description : <?php echo h($item['description']); ?></p>
+
+<?php endif; ?>
+
+<?php if ($item['typeItem'] == 'R'): ?>
+
+<p>Type : Armure</p>
+<p>Matière : <?php echo h($item['matiere']); ?></p>
+<p>Taille : <?php echo h($item['taille']); ?></p>
+
+<?php endif; ?>
+
+<?php if ($item['typeItem'] == 'P'): ?>
+
+<p>Type : Potion</p>
+<p>Effet : <?php echo h($item['effet']); ?></p>
+<p>Durée : <?php echo (int)$item['duree']; ?></p>
+
+<?php endif; ?>
+
+<?php if ($item['typeItem'] == 'S'): ?>
+
+<p>Type : Sort</p>
+
+<p>Type de sort :
+<?php echo h($item['typeSort']); ?>
+</p>
+
+<p>Description :
+<?php echo h($item['descriptionTypeSort']); ?>
+</p>
+
+<p>Rareté :
+<?php echo h($item['rarete']); ?>
+</p>
+
+<p>Instantané :
+<?php echo ((int)$item['estInstantane'] == 1) ? 'Oui' : 'Non'; ?>
+</p>
+
+<p>Dégâts infligés :
+<?php echo (int)$item['pDegat']; ?>
+</p>
+
+<p>PV retirés au lanceur :
+<?php echo (int)$item['pvRetire']; ?>
+</p>
+
+<?php endif; ?>
+
+<?php
+$peutAjouter = true;
+$message = "Ajouter au panier";
+
+if ((int)$item['quantiteStock'] <= 0) {
+    $peutAjouter = false;
+    $message = "Rupture de stock";
+}
+
+if (
+    $item['typeItem'] == 'S'
+    &&
+    (
+        !isset($_SESSION['user']['estMage'])
+        ||
+        (int)$_SESSION['user']['estMage'] !== 1
+    )
+) {
+    $peutAjouter = false;
+    $message = "Réservé aux mages";
+}
+?>
+
+<?php if ($peutAjouter): ?>
+
+<form action="add_to_cart.php" method="post">
+<input type="hidden"
+name="idItem"
+value="<?php echo (int)$item['idItem']; ?>">
+
+<button class="btn-add">
+Ajouter au panier
+</button>
+</form>
+
+<?php else: ?>
+
+<button class="btn-add disabled" disabled>
+<?php echo h($message); ?>
+</button>
+
+<?php endif; ?>
+
+</div>
+
+<section class="evaluations-section">
+
+<h3>Commentaires des joueurs</h3>
+
+<?php if (empty($evaluations)): ?>
+
+<p>Aucun commentaire pour cet item.</p>
+
+<?php else: ?>
+
+<?php foreach ($evaluations as $eval): ?>
+
+<div class="evaluation-card">
+
+    <div class="evaluation-header">
+        <h4><?php echo h($eval['alias']); ?></h4>
+
+        <?php
+        $commentaireDuJoueurConnecte = $idJoueurConnecte === (int)$eval['idJoueur'];
+        $peutModifier = $commentaireDuJoueurConnecte;
+        $peutSupprimer = $estAdmin || $commentaireDuJoueurConnecte;
+        ?>
+
+        <?php if ($peutModifier || $peutSupprimer): ?>
+            <details class="comment-menu">
+                <summary>⋮</summary>
+
+                <div class="comment-menu-content">
+
+                    <?php if ($peutModifier): ?>
+                        <button type="button" onclick="document.getElementById('edit-<?php echo (int)$eval['idJoueur']; ?>').style.display='block'">
+                            Modifier
+                        </button>
+                    <?php endif; ?>
+
+                    <?php if ($peutSupprimer): ?>
+                        <form method="post" action="details.php?id=<?php echo (int)$idItem; ?>">
+                            <input type="hidden" name="action" value="delete_comment">
+                            <input type="hidden" name="idJoueur" value="<?php echo (int)$eval['idJoueur']; ?>">
+
+                            <button type="submit">
+                                Supprimer
+                            </button>
+                        </form>
+                    <?php endif; ?>
+
+                </div>
+            </details>
         <?php endif; ?>
-    </main>
+    </div>
 
-    <aside id="cart">
-        <div class="cart-head">
-            <h4>Panier</h4>
+    <p>
+        <?php
+        $etoiles = (int)$eval['nbEtoiles'];
 
-            <div class="cart-head-actions">
-                <button type="button" id="btn-clear-cart">Vider</button>
+        for ($i = 1; $i <= $etoiles; $i++) {
+            echo "⭐";
+        }
+        ?>
+    </p>
 
-                <form action="panier.php" method="get">
-                    <button id="btn-buy-cart">Acheter</button>
-                </form>
-            </div>
-        </div>
+    <p><?php echo h($eval['eCommentaire']); ?></p>
 
-        <div class="cart-items" id="cart-items">
-            <p>Le Panier est Vide</p>
-        </div>
+    <?php if ($peutModifier): ?>
+        <form 
+            id="edit-<?php echo (int)$eval['idJoueur']; ?>"
+            class="edit-comment-form"
+            method="post"
+            action="details.php?id=<?php echo (int)$idItem; ?>"
+            style="display:none;"
+        >
+            <input type="hidden" name="action" value="update_comment">
+            <input type="hidden" name="idJoueur" value="<?php echo (int)$eval['idJoueur']; ?>">
 
-        <div class="cart-total" id="cart-total">
-            Total : 0
-        </div>
-    </aside>
+            <label>Étoiles :</label>
 
-    <?php include_once "template/footer.php"; ?>
+            <select name="nbEtoiles">
+                <option value="1" <?php if ((int)$eval['nbEtoiles'] == 1) echo "selected"; ?>>1</option>
+                <option value="2" <?php if ((int)$eval['nbEtoiles'] == 2) echo "selected"; ?>>2</option>
+                <option value="3" <?php if ((int)$eval['nbEtoiles'] == 3) echo "selected"; ?>>3</option>
+                <option value="4" <?php if ((int)$eval['nbEtoiles'] == 4) echo "selected"; ?>>4</option>
+                <option value="5" <?php if ((int)$eval['nbEtoiles'] == 5) echo "selected"; ?>>5</option>
+            </select>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const cartItems = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            const btnClearCart = document.getElementById('btn-clear-cart');
-            const btnAdd = document.querySelector('.btn-add');
+            <br><br>
 
-            function afficherPanier(items, total) {
-                cartItems.innerHTML = '';
+            <textarea name="eCommentaire" maxlength="45"><?php echo h($eval['eCommentaire']); ?></textarea>
 
-                if (!items || items.length === 0) {
-                    cartItems.innerHTML = '<p>Le Panier est Vide</p>';
-                    cartTotal.textContent = 'Total : 0';
-                    return;
-                }
+            <br><br>
 
-                for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
+            <button type="submit">
+                Enregistrer
+            </button>
+        </form>
+    <?php endif; ?>
 
-                    const div = document.createElement('div');
-                    div.className = 'cart-item';
+</div>
 
-                    let imageHtml = '<div class="cart-item-image no-image">Aucune image</div>';
-                    if (item.photo) {
-                        imageHtml = '<img src="' + item.photo + '" alt="' + item.nom + '" class="cart-item-image">';
-                    }
+<?php endforeach; ?>
 
-                    div.innerHTML = `
-                <div class="cart-item-row">
-                    ${imageHtml}
-                    <div class="cart-item-info">
-                        <strong>${item.nom}</strong><br>
-                        Prix : ${item.prix}<br>
-                        Quantité : ${item.quantitePanier}<br>
-                        Sous-total : ${item.sousTotal}
-                    </div>
-                </div>
+<?php endif; ?>
 
-                <div class="cart-item-actions">
-                    <button type="button" class="btn-cart-minus" data-id="${item.idItem}">-</button>
-                    <button type="button" class="btn-cart-plus" data-id="${item.idItem}">+</button>
-                    <button type="button" class="btn-cart-remove" data-id="${item.idItem}">Retirer</button>
-                </div>
-            `;
+</section>
 
-                    cartItems.appendChild(div);
-                }
+<?php endif; ?>
 
-                cartTotal.textContent = 'Total : ' + total;
-                activerBoutonsPanier();
-            }
+</main>
 
-            function chargerPanier() {
-                fetch('load_cart.php')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            afficherPanier(data.items, data.total);
-                        } else {
-                            cartItems.innerHTML = '<p>Connectez-vous pour utiliser le panier.</p>';
-                            cartTotal.textContent = 'Total : 0';
-                        }
-                    })
-                    .catch(() => {
-                        cartItems.innerHTML = '<p>Erreur panier.</p>';
-                        cartTotal.textContent = 'Total : 0';
-                    });
-            }
-
-            function actionPanier(action, idItem) {
-                let body = 'action=' + encodeURIComponent(action);
-
-                if (idItem) {
-                    body += '&idItem=' + encodeURIComponent(idItem);
-                }
-
-                fetch('update_cart.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: body
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.success) {
-                            alert(data.message);
-                            return;
-                        }
-
-                        afficherPanier(data.items, data.total);
-                    })
-                    .catch(() => {
-                        alert('Erreur lors de la modification du panier.');
-                    });
-            }
-
-            function activerBoutonsPanier() {
-                const btnPlus = document.querySelectorAll('.btn-cart-plus');
-                const btnMinus = document.querySelectorAll('.btn-cart-minus');
-                const btnRemove = document.querySelectorAll('.btn-cart-remove');
-
-                for (let i = 0; i < btnPlus.length; i++) {
-                    btnPlus[i].addEventListener('click', function () {
-                        actionPanier('increase', this.dataset.id);
-                    });
-                }
-
-                for (let i = 0; i < btnMinus.length; i++) {
-                    btnMinus[i].addEventListener('click', function () {
-                        actionPanier('decrease', this.dataset.id);
-                    });
-                }
-
-                for (let i = 0; i < btnRemove.length; i++) {
-                    btnRemove[i].addEventListener('click', function () {
-                        actionPanier('remove', this.dataset.id);
-                    });
-                }
-            }
-
-            if (btnAdd) {
-                btnAdd.addEventListener('click', function () {
-                    const idItem = this.dataset.itemId;
-
-                    fetch('add_to_cart.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'idItem=' + encodeURIComponent(idItem)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (!data.success) {
-                                alert(data.message);
-                                return;
-                            }
-
-                            afficherPanier(data.items, data.total);
-
-                            this.textContent = 'Ajouté !';
-
-                            setTimeout(() => {
-                                this.textContent = 'Ajouter au panier';
-                            }, 800);
-                        })
-                        .catch(() => {
-                            alert('Erreur ajout panier.');
-                        });
-                });
-            }
-            document.getElementById('btn-buy-cart').addEventListener('click', function (e) {
-                e.preventDefault();
-
-                fetch('panier.php', {
-                    method: 'POST'
-                })
-                    .then(r => r.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) {
-                            chargerPanier();
-                        }
-                    })
-                    .catch(() => {
-                        alert("Erreur lors de l'achat.");
-                    });
-            });
-
-            if (btnClearCart) {
-                btnClearCart.addEventListener('click', function () {
-                    actionPanier('clear', null);
-                });
-            }
-
-            chargerPanier();
-        });
-    </script>
+<?php include_once "template/footer.php"; ?>
 
 </body>
-
 </html>
