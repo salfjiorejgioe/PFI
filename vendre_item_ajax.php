@@ -104,14 +104,16 @@ try {
         ");
         $stmt->execute([$quantiteVendue, $idJoueur, $idItem]);
         $quantiteRestante = $quantitePossedee - $quantiteVendue;
-    } else {
-        $stmt = $pdo->prepare("
-            DELETE FROM Inventaires
-            WHERE idJoueur = ? AND idItem = ?
-        ");
-        $stmt->execute([$idJoueur, $idItem]);
-        $quantiteRestante = 0;
-    }
+    } 
+    // Delete item from inventory
+    // else { 
+    //     $stmt = $pdo->prepare("
+    //         DELETE FROM Inventaires
+    //         WHERE idJoueur = ? AND idItem = ?
+    //     ");
+    //     $stmt->execute([$idJoueur, $idItem]);
+    //     $quantiteRestante = 0;
+    // }
 
     $stmt = $pdo->prepare("
         UPDATE Joueurs
