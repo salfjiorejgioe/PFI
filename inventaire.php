@@ -44,14 +44,16 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
 
       $quantite = (int) $inventaire['quantiteInventaire'];
 
-      if ($quantite > 1) {
+      if ($quantite >= 1) {
         $stmt = $pdo->prepare("
           UPDATE Inventaires
           SET quantiteInventaire = quantiteInventaire - 1
           WHERE idJoueur = ? AND idItem = ?
         ");
         $stmt->execute([$idJoueur, $idItem]);
-      } //else {
+      } 
+      // supprimer le sort/potion de l'inventaire après utilisation
+      //else {
       //   $stmt = $pdo->prepare("
       //     DELETE FROM Inventaires
       //     WHERE idJoueur = ? AND idItem = ?
