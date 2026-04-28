@@ -27,9 +27,9 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
       $heal = (int) $_POST['healing'];
       $idItem = (int) $_POST['idItem'];
 
-      modifier_Pv_joueur_connecte($pdo, $idJoueur, $heal);
-
-      $stmt = $pdo->prepare("
+      $healingSuccess = modifier_Pv_joueur_connecte($pdo, $idJoueur, $heal);
+      if($healingSuccess){
+        $stmt = $pdo->prepare("
         SELECT quantiteInventaire
         FROM Inventaires
         WHERE idJoueur = ? AND idItem = ?
@@ -60,6 +60,11 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
       //   ");
       //   $stmt->execute([$idJoueur, $idItem]);
       // }
+      }
+      elseif(!$healingSuccess){
+        $message = "Non tu peux pas heal idiot"
+      }
+      
 
       $pdo->commit();
       header("Location: " . $_SERVER['PHP_SELF']);
