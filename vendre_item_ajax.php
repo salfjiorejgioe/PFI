@@ -96,7 +96,7 @@ try {
     ");
     $stmt->execute([$quantiteVendue, $idItem]);
 
-    if ($quantitePossedee > $quantiteVendue) {
+    if ($quantitePossedee >= $quantiteVendue) {
         $stmt = $pdo->prepare("
             UPDATE Inventaires
             SET quantiteInventaire = quantiteInventaire - ?
