@@ -143,44 +143,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $difficulte = trim($_POST['difficulte']);
     $estPigee = isset($_POST['estPigee']) ? 1 : 0;
 
-
     $reponse1 = trim($_POST['reponse1']);
     $reponse2 = trim($_POST['reponse2']);
     $reponse3 = trim($_POST['reponse3']);
     $reponse4 = trim($_POST['reponse4']);
-    $bonneReponse = $_POST['bonneReponse'];
 
-    if (
-        $enonce == "" ||
-        $idCategorie == "" ||
-        $difficulte == "" ||
-        $reponse1 == "" ||
-        $reponse2 == "" ||
-        $reponse3 == "" ||
-        $reponse4 == "" ||
-        $bonneReponse == ""
-    ) {
-        $error = "Tous les champs de l'énigme doivent être remplis.";
+    $bonneReponse = isset($_POST['bonneReponse']) ? (int) $_POST['bonneReponse'] : 0;
+
+    $reponses = [];
+
+    if ($reponse1 != "") {
+        $reponses[1] = $reponse1;
+    }
+
+    if ($reponse2 != "") {
+        $reponses[2] = $reponse2;
+    }
+
+    if ($reponse3 != "") {
+        $reponses[3] = $reponse3;
+    }
+
+    if ($reponse4 != "") {
+        $reponses[4] = $reponse4;
+    }
+
+    if ($enonce == "" || $idCategorie == "" || $difficulte == "") {
+        $error = "L'énoncé, la catégorie et la difficulté sont obligatoires.";
+    } elseif (count($reponses) < 2) {
+        $error = "Il faut au moins 2 réponses.";
+    } elseif ($bonneReponse == 0) {
+        $error = "Vous devez choisir la bonne réponse.";
+    } elseif (!isset($reponses[$bonneReponse])) {
+        $error = "La bonne réponse choisie doit avoir un champ rempli.";
     } else {
         try {
             $pdo->beginTransaction();
 
             $sqlEnigme = "INSERT INTO Enigmes (enonce, idCategorie, difficulte, estPigee)
-VALUES (?, ?, ?, ?)";
+                          VALUES (?, ?, ?, ?)";
+
             $stmtEnigme = $pdo->prepare($sqlEnigme);
-           $stmtEnigme->execute([$enonce, $idCategorie, $difficulte, $estPigee]);
+            $stmtEnigme->execute([$enonce, $idCategorie, $difficulte, $estPigee]);
 
             $idEnigme = $pdo->lastInsertId();
 
-            $reponses = [
-                1 => $reponse1,
-                2 => $reponse2,
-                3 => $reponse3,
-                4 => $reponse4
-            ];
-
             $sqlReponse = "INSERT INTO Reponses (estBonneReponse, reponse, idEnigme)
                            VALUES (?, ?, ?)";
+
             $stmtReponse = $pdo->prepare($sqlReponse);
 
             foreach ($reponses as $numero => $texteReponse) {
@@ -334,14 +344,14 @@ try {
                     <option value="D">Difficile</option>
                 </select>
 
-                
 
-                <input type="text" name="reponse1" placeholder="Réponse 1" required>
-                <input type="text" name="reponse2" placeholder="Réponse 2" required>
-                <input type="text" name="reponse3" placeholder="Réponse 3" required>
-                <input type="text" name="reponse4" placeholder="Réponse 4" required>
 
-                <select name="bonneReponse" required>
+                <input type="text" name="reponse1" id="reponse1" placeholder="Réponse 1" required>
+                <input type="text" name="reponse2" id="reponse2" placeholder="Réponse 2" required>
+                <input type="text" name="reponse3" id="reponse3" placeholder="Réponse 3">
+                <input type="text" name="reponse4" id="reponse4" placeholder="Réponse 4">
+
+                <select name="bonneReponse" id="bonneReponse" required>
                     <option value="">Choisir la bonne réponse</option>
                     <option value="1">Réponse 1</option>
                     <option value="2">Réponse 2</option>
@@ -381,6 +391,37 @@ try {
                 sort.style.display = "block";
             }
         }
+
+        const reponse1 = document.getElementById("reponse1");
+        const reponse2 = document.getElementById("reponse2");
+        const reponse3 = document.getElementById("reponse3");
+        const reponse4 = document.getElementById("reponse4");
+        const bonneReponse = document.getElementById("bonneReponse");
+
+        function verifierReponsesRemplies() {
+            const champs = [reponse1, reponse2, reponse3, reponse4];
+
+            for (let i = 0; i < champs.length; i++) {
+                const option = bonneReponse.querySelector('option[value="' + (i + 1) + '"]');
+
+                if (champs[i].value.trim() === "") {
+                    option.disabled = true;
+
+                    if (bonneReponse.value == (i + 1)) {
+                        bonneReponse.value = "";
+                    }
+                } else {
+                    option.disabled = false;
+                }
+            }
+        }
+
+        reponse1.addEventListener("input", verifierReponsesRemplies);
+        reponse2.addEventListener("input", verifierReponsesRemplies);
+        reponse3.addEventListener("input", verifierReponsesRemplies);
+        reponse4.addEventListener("input", verifierReponsesRemplies);
+
+        verifierReponsesRemplies();
 
         typeItem.addEventListener("change", afficherBonsChamps);
         afficherBonsChamps();
