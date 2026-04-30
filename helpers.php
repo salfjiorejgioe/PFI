@@ -2,7 +2,8 @@
 require_once 'db.php';
 
 if (!function_exists('h')) {
-    function h($texte) {
+    function h($texte)
+    {
         return htmlspecialchars($texte, ENT_QUOTES, 'UTF-8');
     }
 }
@@ -17,7 +18,8 @@ if (isset($_SESSION['user'])) {
 
 }
 
-function sort_heal($pdo, $idItem, $quantiteInventaire){
+function sort_heal($pdo, $idItem, $quantiteInventaire)
+{
     $sql = "SELECT s.*, i.nom, t.pvRetire
             FROM Sorts s
             JOIN Items i ON s.idItem = i.idItem
@@ -34,7 +36,8 @@ function sort_heal($pdo, $idItem, $quantiteInventaire){
     }
 }
 
-function potion_heal($pdo, $idItem, $quantiteInventaire){
+function potion_heal($pdo, $idItem, $quantiteInventaire)
+{
     $sql = "SELECT p.*, i.nom 
             FROM Potions p
             JOIN Items i ON p.idItem = i.idItem
@@ -49,14 +52,15 @@ function potion_heal($pdo, $idItem, $quantiteInventaire){
 
         if (preg_match('/soin|soigne|heal/i', $description)) {
             if (preg_match('/\d+/', $description, $matches)) {
-                $heal = (int)$matches[0];
+                $heal = (int) $matches[0];
                 echo_Heal($heal, $idItem);
             }
         }
     }
 }
 
-function echo_Heal($quantite_heal, $idItem){
+function echo_Heal($quantite_heal, $idItem)
+{
     echo '
         <form method="post">
             <input type="hidden" name="idItem" value="' . $idItem . '">
@@ -69,9 +73,11 @@ function echo_Heal($quantite_heal, $idItem){
 
 
 //sera appelé dans la page d'affichage des items de soins
-function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
+function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV)
+{
 
-    // working on it, not done---------------------------------------------------
+    $success = false;
+
     $stmt = $pdo->prepare("
         SELECT pointsVie
         FROM Joueurs
@@ -79,42 +85,38 @@ function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
     ");
     $stmt->execute([$idJoueur]);
     $joueur = $stmt->fetch();
-    $currentHealth = (int)$joueur['pointsVie'];
+    $currentHealth = (int) $joueur['pointsVie'];
 
+    if ($currentHealth >= 50) {
+        $success = false;
+    } else {
+        // Update DB
 
-
-
-    $pv = $currentHealth + $modification_PV;
-
-    
-
-    
-    // Update DB
-    if(($currentHealth + $modification_PV) > 50){ // if healing exceeds 50 hp
-        $sql = "UPDATE Joueurs 
+        //---------------------------------------------------------------------------
+        if (($currentHealth + $modification_PV) > 50) { // if healing exceeds 50 hp
+            $sql = "UPDATE Joueurs 
             SET pointsVie = :heal
             WHERE idJoueur = :idJoueur";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-        'heal' => 50,
-        'idJoueur' => $idJoueur
-        ]);
-     }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'heal' => 50,
+                'idJoueur' => $idJoueur
+            ]);
+            $success = true;
+        } else { // default healing
 
-    
-    else{ // default healing
-
-        $sql = "UPDATE Joueurs 
+            $sql = "UPDATE Joueurs 
             SET pointsVie = pointsVie + :heal
             WHERE idJoueur = :idJoueur";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-        'heal' => $modification_PV,
-        'idJoueur' => $idJoueur
-        ]);
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'heal' => $modification_PV,
+                'idJoueur' => $idJoueur
+            ]);
+            $success = true;
+        }
+
     }
-    //---------------------------------------------------------------------------
-    
 
     $stmt = $pdo->prepare("
         SELECT pointsVie
@@ -125,5 +127,8 @@ function modifier_Pv_joueur_connecte($pdo, $idJoueur, $modification_PV){
     $joueur = $stmt->fetch();
 
     //session update
-    $_SESSION['user']['pointsVie'] = (int)$joueur['pointsVie'];
+    $_SESSION['user']['pointsVie'] = (int) $joueur['pointsVie'];
+
+
+    return $success;
 }
