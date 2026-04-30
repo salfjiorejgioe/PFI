@@ -1,11 +1,101 @@
 <?php
 $user = $_SESSION['user'] ?? null;
 ?>
+
 <header>
+
+<style>
+.profile-icon-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #c9a44c;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  box-shadow: 0 0 10px rgba(255, 216, 107, 0.4);
+  transition: all 0.2s ease;
+}
+
+.profile-icon-btn:hover {
+  transform: scale(1.1);
+  border-color: #ffd86b;
+  box-shadow: 0 0 18px rgba(255, 216, 107, 0.8);
+}
+
+.profile-icon-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.icon-popup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-popup-content {
+  background: rgba(25, 18, 12, 0.96);
+  border: 2px solid #c9a44c;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  color: white;
+}
+
+.icon-choice-form {
+  display: grid;
+  grid-template-columns: repeat(3, 70px);
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.icon-choice-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid #c9a44c;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.icon-choice-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.icon-choice-btn:hover {
+  transform: scale(1.08);
+  border-color: #ffd86b;
+}
+
+.close-icon-popup {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #c9a44c;
+  background: #1b1208;
+  color: #ffd86b;
+  cursor: pointer;
+}
+</style>
+
   <div class="header-row">
     <div class="title-block">
       <img src="public/images/DarquestLogo.png" alt="Darquest Logo" style="max-width: 500px">
-      <!-- <h2>Notre bibliothèque des objets magiques et puissants</h2> -->
     </div>
 
     <div class="top-actions">
@@ -13,7 +103,16 @@ $user = $_SESSION['user'] ?? null;
       <?php if (!empty($user)): ?>
         <div class="user-info">
           <div class="user-info-top">
+
+            <button type="button" class="profile-icon-btn" id="openIconPopup">
+              <img 
+                src="image-site/<?php echo h($user['iconeProfil'] ?? 'icone1.png'); ?>" 
+                alt="Icône profil"
+              >
+            </button>
+
             <span class="user-name">Bonjour, <?php echo h($user['alias']); ?></span>
+
             <span class="user-role"
             style="
                     display: flex;
@@ -105,4 +204,53 @@ $user = $_SESSION['user'] ?? null;
       <?php endif; ?>
     </ul>
   </nav>
+
+  <?php if (!empty($user)): ?>
+    <div id="iconPopup" class="icon-popup">
+      <div class="icon-popup-content">
+        <h3>Choisir une icône</h3>
+
+        <form method="post" action="changer_icone.php" class="icon-choice-form">
+          <?php for ($i = 1; $i <= 6; $i++): ?>
+            <button type="submit" name="icone" value="icone<?php echo $i; ?>.png" class="icon-choice-btn">
+              <img src="image-site/icone<?php echo $i; ?>.png" alt="Icône <?php echo $i; ?>">
+            </button>
+          <?php endfor; ?>
+        </form>
+
+        <button type="button" class="close-icon-popup" id="closeIconPopup">
+          Fermer
+        </button>
+      </div>
+    </div>
+  <?php endif; ?>
+
 </header>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const openBtn = document.getElementById("openIconPopup");
+  const closeBtn = document.getElementById("closeIconPopup");
+  const popup = document.getElementById("iconPopup");
+
+  if (openBtn && popup) {
+    openBtn.addEventListener("click", function () {
+      popup.style.display = "flex";
+    });
+  }
+
+  if (closeBtn && popup) {
+    closeBtn.addEventListener("click", function () {
+      popup.style.display = "none";
+    });
+  }
+
+  if (popup) {
+    popup.addEventListener("click", function (e) {
+      if (e.target === popup) {
+        popup.style.display = "none";
+      }
+    });
+  }
+});
+</script>
