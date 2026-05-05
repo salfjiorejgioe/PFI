@@ -400,6 +400,7 @@ if ($idItem <= 0) {
                         
                         
                         > ' . $pourcentage . '%</progress>
+                        <br>
                         
                         
                         ';
