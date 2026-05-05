@@ -399,7 +399,8 @@ if ($idItem <= 0) {
                         style="accent-color: #f5ac10;"
                         
                         
-                        > ' . $pourcentage . '%</progress>
+                        > </progress>
+                        <div>'. $pourcentage . '%</div>
                         <br>
                         
                         
