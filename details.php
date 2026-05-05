@@ -339,19 +339,24 @@ if ($idItem <= 0) {
 
                 ?>
                 <?php
+                $moyenne = 0;
                 $totalEval = $moyenne_1_star + $moyenne_2_star + $moyenne_3_star + $moyenne_4_star + $moyenne_5_star;
 
-                $moyenne = ((1 * $moyenne_1_star) + (2 * $moyenne_2_star) + (3 * $moyenne_3_star) + (4 * $moyenne_4_star) + (5 * $moyenne_5_star)) / $totalEval;
-                
+                if ($totalEval > 0) {
+                    $moyenne = ((1 * $moyenne_1_star) + (2 * $moyenne_2_star) + (3 * $moyenne_3_star) + (4 * $moyenne_4_star) + (5 * $moyenne_5_star)) / $totalEval;
+                }
+
+
+
 
                 ?>
 
                 <div>
                     <div>
-                        Évaluations: <?=$moyenne?> / 5
+                        Évaluations: <?= $moyenne ?> / 5
                     </div>
                     <div>
-                        <?=$totalEval ?> évaluations au niveau mondial
+                        <?= $totalEval ?> évaluations au niveau mondial
                     </div>
 
                     <?php
@@ -380,12 +385,16 @@ if ($idItem <= 0) {
                                 break;
                         }
 
-                        $pourcentage = $total_Rating_this_star * 100 / $totalEval;
+                        $pourcentage = 0;
+                        if ($totalEval > 0) {
+                            $pourcentage = $total_Rating_this_star * 100 / $totalEval;
+                        }
+                        
 
                         echo '
 
-                        <label for="rating"> ' . $i . ' étoiles </label>
-                        <progress id="rating" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
+                        <label for="rating<?=$i?>"> ' . $i . ' étoiles </label>
+                        <progress id="rating<?=$i?>" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
 
                         style="accent-color: #f5ac10;"
                         
