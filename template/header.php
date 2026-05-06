@@ -91,6 +91,139 @@ $user = $_SESSION['user'] ?? null;
   color: #ffd86b;
   cursor: pointer;
 }
+/* =========================
+   HEADER MOBILE FIX
+   ========================= */
+@media (max-width: 768px) {
+
+  header {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .title-block {
+    width: 100%;
+    text-align: center;
+  }
+
+  .title-block img {
+    width: 100%;
+    max-width: 320px !important;
+    height: auto;
+  }
+
+  .top-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .user-info {
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .user-info-top {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .profile-icon-btn {
+    margin: 0 auto;
+    width: 72px;
+    height: 72px;
+  }
+
+  .user-name {
+    text-align: center;
+    font-size: 1rem;
+    word-break: break-word;
+  }
+
+  .user-role {
+    width: 100%;
+    justify-content: center !important;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  progress {
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .user-role label {
+    position: static !important;
+  }
+
+  .user-wallet {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .wallet-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .coin-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .login-btn,
+  #cartBtn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  nav li {
+    width: 100%;
+  }
+
+  nav a {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
+  .icon-popup-content {
+    width: 92%;
+    max-width: 360px;
+    padding: 16px;
+  }
+
+  .icon-choice-form {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .icon-choice-btn {
+    width: 100%;
+    aspect-ratio: 1/1;
+    height: auto;
+  }
+}
 </style>
 
   <div class="header-row">

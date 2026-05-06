@@ -1983,3 +1983,395 @@ progress::-moz-progress-bar {
 .btn-page:active {
   transform: scale(0.95);
 }
+
+/* =========================================================
+   MOBILE PATCH - paste this at the VERY END of your CSS file
+   Keeps desktop intact because everything is inside max-width
+   ========================================================= */
+
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-attachment: scroll;
+    background-position: center top;
+  }
+
+  header,
+  main,
+  .admin-container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  header {
+    padding-top: 16px;
+    gap: 14px;
+  }
+
+  .header-row {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .title-block,
+  .top-actions,
+  .user-info {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .title-block h1,
+  h1 {
+    font-size: clamp(1.8rem, 8vw, 2.35rem);
+    line-height: 1.1;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .title-block h2,
+  h2 {
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    text-align: center;
+  }
+
+  .top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    flex: 0 0 44px;
+  }
+
+  .login-btn,
+  #cartBtn {
+    flex: 1 1 140px;
+    width: auto;
+    min-height: 44px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .user-info {
+    padding: 10px;
+  }
+
+  .user-info-top {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    white-space: normal;
+  }
+
+  .user-name,
+  .user-role {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .user-wallet {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .wallet-item {
+    width: 100%;
+    flex: unset;
+    min-width: 0;
+  }
+
+  nav ul {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  nav a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+
+  header section,
+  #filtres {
+    width: 100%;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  header section input[type="text"],
+  #filtres input[type="text"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  header section button,
+  #filtres button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  section,
+  .section-items,
+  .admin-card,
+  .signup-page,
+  .evaluations-section {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 12px;
+  }
+
+  section > h3,
+  .section-items h2 {
+    font-size: clamp(1.25rem, 6vw, 1.6rem);
+    text-align: center;
+  }
+
+  #conversion-monnaie,
+  #conversion-monnaie tbody,
+  #conversion-monnaie tr,
+  #conversion-monnaie td {
+    display: block;
+    width: 100%;
+  }
+
+  #conversion-monnaie td {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  #conversion-monnaie td:last-child {
+    border-bottom: none;
+  }
+
+  .items-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .item-card {
+    padding: 14px;
+  }
+
+  .item-card img,
+  .item-no-image {
+    height: 150px;
+  }
+
+  /* Product rows become clean mobile cards */
+  #potions tr,
+  #armures tr,
+  #armes tr,
+  #sorts tr {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 8px 12px;
+    align-items: start;
+  }
+
+  #potions img,
+  #armures img,
+  #armes img,
+  #sorts img {
+    width: 64px;
+    height: 64px;
+  }
+
+  #potions td,
+  #armures td,
+  #armes td,
+  #sorts td {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  #potions td:first-child,
+  #armures td:first-child,
+  #armes td:first-child,
+  #sorts td:first-child {
+    grid-row: span 6;
+  }
+
+  #potions td:nth-child(3),
+  #armures td:nth-child(3),
+  #armes td:nth-child(3),
+  #sorts td:nth-child(3) {
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  #potions td:nth-child(5),
+  #potions td:nth-child(6),
+  #armures td:nth-child(5),
+  #armures td:nth-child(6),
+  #armes td:nth-child(5),
+  #armes td:nth-child(6),
+  #sorts td:nth-child(5),
+  #sorts td:nth-child(6) {
+    white-space: normal;
+  }
+
+  .btn-add,
+  .btn-page,
+  .btn-delete,
+  .btn-disable,
+  .btn-enable,
+  .action-btn,
+  .admin-form button {
+    width: 100%;
+    min-height: 44px;
+    text-align: center;
+  }
+
+  /* Admin tables scroll instead of breaking the page */
+  .admin-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-card table {
+    min-width: 720px;
+  }
+
+  /* Cart becomes full-width slide panel on mobile */
+  #cart {
+    width: 100%;
+    max-width: 100%;
+    right: 0;
+    left: auto;
+    height: 100dvh;
+    transform: translateX(110%);
+    transition: transform 0.2s ease;
+    z-index: 999;
+  }
+
+  #cart:target {
+    transform: translateX(0);
+  }
+
+  .cart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .cart-item-row {
+    align-items: flex-start;
+  }
+
+  .cart-item-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .cart-item-actions {
+    flex-wrap: wrap;
+  }
+
+  .cart-item-actions button {
+    flex: 1 1 80px;
+    min-height: 36px;
+  }
+
+  #detail-container {
+    padding: 16px 0;
+  }
+
+  #detail-card {
+    max-width: 100%;
+  }
+
+  .evaluation-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .comment-menu-content {
+    right: auto;
+    left: 0;
+    bottom: auto;
+    top: 35px;
+  }
+
+  progress {
+    width: 100%;
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  header,
+  main,
+  .admin-container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .coin-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .wallet-label,
+  .wallet-value {
+    font-size: 0.85rem;
+  }
+
+  #potions tr,
+  #armures tr,
+  #armes tr,
+  #sorts tr {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  #potions td:first-child,
+  #armures td:first-child,
+  #armes td:first-child,
+  #sorts td:first-child {
+    grid-row: auto;
+    justify-self: center;
+  }
+
+  #potions td:nth-child(3),
+  #armures td:nth-child(3),
+  #armes td:nth-child(3),
+  #sorts td:nth-child(3) {
+    justify-self: center;
+  }
+
+  .item-card img,
+  .item-no-image {
+    height: 130px;
+  }
+
+  .signup-page,
+  .darquest-login main.darquest-login {
+    padding: 1.5rem;
+  }
+}
