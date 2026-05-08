@@ -69,7 +69,7 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
         $_SESSION['message_inventaire'] = "Healed";
         $_SESSION['message_inventaire_success'] = true;
       } elseif (!$healingSuccess) {
-        $_SESSION['message_inventaire'] = "Non tu peux pas heal idiot";
+        $_SESSION['message_inventaire'] = "Non, tu ne peux pas heal idiot";
         $_SESSION['message_inventaire_success'] = false;
       }
 
@@ -514,7 +514,7 @@ function prixVenteItem($item)
           </div>
           <?php unset($_SESSION['message_inventaire'], $_SESSION['message_inventaire_success']); ?>
         <?php else: ?>
-          <div id="messagePanier" class="message-panier" style="display:none;"></div>
+          <div id="messagePanier" class="message-panier" ></div>
         <?php endif; ?>
       </div>
 
