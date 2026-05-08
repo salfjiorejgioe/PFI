@@ -348,75 +348,76 @@ if ($idItem <= 0) {
                 ?>
                 <div>
                     <div>
-                        <?php 
-                        for($i = 1; $i<=5; $i++){
-                            if($i <= $moyenne){
-                                echo'<span style="font-size:150%;color:yellow;">★</span>';
-                            }
-                            else{
+                        <?php
+                        for ($i = 1; $i <= 5; $i++) {
+                            if ($i <= $moyenne) {
+                                echo '<span style="font-size:150%;color:yellow;">★</span>';
+                            } else {
                                 echo '<span style="font-size:150%;color:#00B0C7;">☆</span>';
                             }
 
                         }
-                        
+
                         ?>
-                        
+
                         <?= $moyenne ?> / 5
                     </div>
                     <div>
-                        <?= $totalEval ?> évaluations au niveau mondial
+                        <?= $totalEval ?> <small>évaluations au niveau mondial
                     </div>
+                    <div>
+                        <?php
 
-                    <?php
+                        for ($i = 1; $i <= 5; $i++) {
 
-                    for ($i = 1; $i <= 5; $i++) {
+                            $total_Rating_this_star = 0;
 
-                        $total_Rating_this_star = 0;
+                            switch ($i) {
+                                case 1:
+                                    $total_Rating_this_star = $moyenne_1_star;
+                                    break;
+                                case 2:
+                                    $total_Rating_this_star = $moyenne_2_star;
+                                    break;
+                                case 3:
+                                    $total_Rating_this_star = $moyenne_3_star;
+                                    break;
+                                case 4:
+                                    $total_Rating_this_star = $moyenne_4_star;
+                                    break;
+                                case 5:
+                                    $total_Rating_this_star = $moyenne_5_star;
+                                    break;
+                                default:
+                                    break;
+                            }
 
-                        switch ($i) {
-                            case 1:
-                                $total_Rating_this_star = $moyenne_1_star;
-                                break;
-                            case 2:
-                                $total_Rating_this_star = $moyenne_2_star;
-                                break;
-                            case 3:
-                                $total_Rating_this_star = $moyenne_3_star;
-                                break;
-                            case 4:
-                                $total_Rating_this_star = $moyenne_4_star;
-                                break;
-                            case 5:
-                                $total_Rating_this_star = $moyenne_5_star;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        $pourcentage = 0;
-                        if ($totalEval > 0) {
-                            $pourcentage = $total_Rating_this_star * 100 / $totalEval;
-                        }
-                        echo '
-                        <label for="rating<?=$i?>"> ' . $i . ' étoiles </label>
-                        <progress id="rating<?=$i?>" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
-                        > </progress>
-                        <div>'. $pourcentage . '%</div>
-                        <br>
+                            $pourcentage = 0;
+                            if ($totalEval > 0) {
+                                $pourcentage = $total_Rating_this_star * 100 / $totalEval;
+                            }
+                            echo '
+                            <div style="display:block">
+                                <label for="rating<?=$i?>"> ' . $i . ' étoiles </label>
+                                <progress id="rating<?=$i?>" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
+                                > </progress> <span>' . $pourcentage . '%</span>
+                            </div>
+                        
                         
                         
                         ';
 
-                    }
-                    ?>
+                        }
+                        ?>
+                    </div>
+
 
 
 
                 </div>
-
-
-
             </section>
+
+            
 
             <section class="evaluations-section">
 
