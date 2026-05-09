@@ -1,18 +1,11 @@
 <?php
+// panier_de_paniertest.php
+require_once 'session_config.php';
 require_once 'db.php';
 require_once 'helpers.php';
 
-if (isset($_SESSION['user'])) {
-    $joueur_id = $_SESSION['user']['idJoueur'];
-    $joueur_alias = $_SESSION['user']['alias'];
 
-    $joueur_or = $_SESSION['user']['or'];
-    $joueur_argent = $_SESSION['user']['argent'];
-    $joueur_bronze = $_SESSION['user']['bronze'];
 
-    $joueur_est_mage = $_SESSION['user']['estMage'];
-
-}
 
 function obtenirArticle($pdo, $idItem)
 { // affiche un item recherché
@@ -165,10 +158,12 @@ function retirer_objet_panier($pdo, $idItem)
 }
 function acheter_panier($pdo)
 {
-    if (!isset($_SESSION['user']['idJoueur'])) {
-        //echo "<script>alert('Joueur non-connecté');</script>";
-        return false;
-    }
+   if (!isset($_SESSION['user']['idJoueur'])) {
+    return [
+        "success" => false,
+        "message" => "Joueur non connecté"
+    ];
+}
 
     $idJoueur = $_SESSION['user']['idJoueur'];
 
@@ -339,8 +334,10 @@ return [
     "message" => "Achat réussi"
 ];
 
-} catch (Exception $e) {
-    $pdo->rollBack();
+}  catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
 
     return [
         "success" => false,

@@ -1,8 +1,5 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-session_start();
+require_once 'session_config.php';
 require_once __DIR__ . '/db.php';
 
 function h($value) {
@@ -62,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $token !== '') {
                 $success = "Votre mot de passe a été changé avec succès.";
             }
         } catch (PDOException $e) {
-            $errors[] = "Erreur SQL : " . $e->getMessage();
+            $errors[] = "Erreur serveur pendant le changement du mot de passe.";
         }
     }
 }

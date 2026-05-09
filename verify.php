@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'session_config.php';
 require_once __DIR__ . '/db.php';
 
 if (!isset($_SESSION['verification_email'])) {
@@ -7,8 +7,10 @@ if (!isset($_SESSION['verification_email'])) {
     exit;
 }
 
-$email = $_SESSION['verification_email'];
-$alias = $_SESSION['verification_alias'] ?? '';
+$email = (string) $_SESSION['verification_email'];
+$alias = isset($_SESSION['verification_alias'])
+    ? (string) $_SESSION['verification_alias']
+    : '';
 $errors = [];
 $success = '';
 
@@ -18,37 +20,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($code === '') {
         $errors[] = "Le code est obligatoire.";
     } else {
-        $stmt = $pdo->prepare("
-            SELECT idJoueur
-            FROM Joueurs
-            WHERE courriel = :courriel
-              AND emailCode = :code
-              AND emailVerifie = 0
-            LIMIT 1
+       try {
+
+    $stmt = $pdo->prepare("
+        SELECT idJoueur
+        FROM Joueurs
+        WHERE courriel = :courriel
+          AND emailCode = :code
+          AND emailVerifie = 0
+        LIMIT 1
+    ");
+
+    $stmt->execute([
+        ':courriel' => $email,
+        ':code' => $code
+    ]);
+
+    $joueur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($joueur) {
+
+        $update = $pdo->prepare("
+            UPDATE Joueurs
+            SET emailVerifie = 1,
+                emailCode = NULL
+            WHERE idJoueur = :idJoueur
         ");
-        $stmt->execute([
-            ':courriel' => $email,
-            ':code' => $code
+
+        $update->execute([
+            ':idJoueur' => $joueur['idJoueur']
         ]);
 
-        $joueur = $stmt->fetch(PDO::FETCH_ASSOC);
+        unset(
+            $_SESSION['verification_email'],
+            $_SESSION['verification_alias']
+        );
 
-        if ($joueur) {
-            $update = $pdo->prepare("
-                UPDATE Joueurs
-                SET emailVerifie = 1,
-                    emailCode = NULL
-                WHERE idJoueur = :idJoueur
-            ");
-            $update->execute([
-                ':idJoueur' => $joueur['idJoueur']
-            ]);
+        $success = "Courriel vérifié avec succès. Vous pouvez maintenant vous connecter.";
 
-            unset($_SESSION['verification_email'], $_SESSION['verification_alias']);
-            $success = "Courriel vérifié avec succès. Vous pouvez maintenant vous connecter.";
-        } else {
-            $errors[] = "Code invalide.";
-        }
+    } else {
+        $errors[] = "Code invalide.";
+    }
+
+} catch (Throwable $e) {
+    $errors[] = "Erreur serveur pendant la vérification.";
+}
     }
 }
 ?>

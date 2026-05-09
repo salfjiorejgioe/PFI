@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'session_config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mail_helper.php';
 

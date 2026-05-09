@@ -1,28 +1,43 @@
 <?php
-session_start();
+require_once 'session_config.php';
 require_once 'db.php';
 require_once 'helpers.php';
 require_once 'panier_de_paniertest.php';
+//paniertest.php
 
-if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
+    $_SESSION['redirect_after_login'] = 'paniertest.php';
+    header('Location: login.php');
+    exit;
+}
+
+$idJoueur = (int) $_SESSION['user']['idJoueur'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     if ($_POST['action'] === 'Acheter') {
         $resultat = acheter_panier($pdo);
         $_SESSION['message_panier'] = $resultat['message'];
         $_SESSION['message_panier_success'] = $resultat['success'];
 
-    } else if ($_POST['action'] === 'Vider panier') {
-        vider_panier($pdo, $_SESSION['user']['idJoueur']);
+    } elseif ($_POST['action'] === 'Vider panier') {
+        vider_panier($pdo, $idJoueur);
         $_SESSION['message_panier'] = "Panier vidé";
         $_SESSION['message_panier_success'] = true;
 
-    } else if ($_POST['action'] === 'Supprimer du panier') {
+    } elseif ($_POST['action'] === 'Supprimer du panier') {
         $idItem = isset($_POST['idItem']) ? (int) $_POST['idItem'] : 0;
-        supprimer_objet_du_panier($pdo, $idItem);
-        $_SESSION['message_panier'] = "Article supprimé du panier";
-        $_SESSION['message_panier_success'] = true;
 
-    } else if ($_POST['action'] === 'Modifier quantité') {
+        if ($idItem > 0) {
+            supprimer_objet_du_panier($pdo, $idItem);
+            $_SESSION['message_panier'] = "Article supprimé du panier";
+            $_SESSION['message_panier_success'] = true;
+        } else {
+            $_SESSION['message_panier'] = "Article invalide.";
+            $_SESSION['message_panier_success'] = false;
+        }
+
+    } elseif ($_POST['action'] === 'Modifier quantité') {
         $idItem = isset($_POST['idItem']) ? (int) $_POST['idItem'] : 0;
         $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 0;
 
@@ -31,8 +46,8 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
         $_SESSION['message_panier_success'] = $resultat['success'];
     }
 
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+    header("Location: paniertest.php");
+    exit;
 }
 
 $articles_panier = obtenirArticlesPanier($pdo);
@@ -47,6 +62,7 @@ foreach ($articles_panier as $article) {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -293,12 +309,18 @@ foreach ($articles_panier as $article) {
                     </form>
                 </div>
 
-                <?php if (isset($_SESSION['message_panier'])): ?>
+                <?php
+                $messagePanier = $_SESSION['message_panier'] ?? '';
+                $messagePanierSuccess = $_SESSION['message_panier_success'] ?? false;
+                unset($_SESSION['message_panier'], $_SESSION['message_panier_success']);
+                ?>
+
+                <?php if ($messagePanier !== ''): ?>
                     <div id="messagePanier"
-                        class="message-panier <?php echo $_SESSION['message_panier_success'] ? 'succes' : 'erreur'; ?>">
-                        <?php echo htmlspecialchars($_SESSION['message_panier']); ?>
+                        class="message-panier <?php echo $messagePanierSuccess ? 'succes' : 'erreur'; ?>">
+                        <?php echo htmlspecialchars($messagePanier); ?>
                     </div>
-                    <?php unset($_SESSION['message_panier'], $_SESSION['message_panier_success']); ?>
+
                 <?php else: ?>
                     <div id="messagePanier" class="message-panier" style="display:none;"></div>
                 <?php endif; ?>
@@ -471,4 +493,5 @@ foreach ($articles_panier as $article) {
         });
     </script>
 </body>
+
 </html>

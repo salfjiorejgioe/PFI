@@ -1,7 +1,11 @@
 <?php
+require_once __DIR__ . '/session_config.php';
+
 function estConnecte()
 {
-    return isset($_SESSION['user']) && !empty($_SESSION['user']['idJoueur']);
+    return isset($_SESSION['user'])
+        && isset($_SESSION['user']['idJoueur'])
+        && (int) $_SESSION['user']['idJoueur'] > 0;
 }
 
 function estVerifie()
@@ -15,6 +19,8 @@ function exigerConnexion()
 {
     if (!estConnecte()) {
         $_SESSION['auth_message'] = "Veuillez vous connecter.";
+        $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? 'index.php';
+
         header('Location: login.php');
         exit;
     }
@@ -24,6 +30,8 @@ function exigerCompteVerifie()
 {
     if (!estConnecte()) {
         $_SESSION['auth_message'] = "Veuillez vous connecter.";
+        $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? 'index.php';
+
         header('Location: login.php');
         exit;
     }

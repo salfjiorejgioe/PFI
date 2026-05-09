@@ -1,12 +1,10 @@
 <?php
-session_start();
+require_once 'session_config.php';
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/auth_helper.php';
 require_once __DIR__ . '/mail_helper.php';
 
-exigerConnexion();
-
 if (!isset($_SESSION['user']) || !isset($_SESSION['user']['idJoueur'])) {
+    $_SESSION['redirect_after_login'] = 'profil.php';
     header('Location: login.php');
     exit;
 }

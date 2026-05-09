@@ -1,6 +1,8 @@
 <?php
-session_start();
-$message = $_SESSION['auth_message'] ?? "Veuillez vérifier votre courriel pour continuer.";
+require_once 'session_config.php';
+$message = isset($_SESSION['auth_message'])
+    ? (string) $_SESSION['auth_message']
+    : "Veuillez vérifier votre courriel pour continuer.";
 unset($_SESSION['auth_message']);
 ?>
 <!DOCTYPE html>
