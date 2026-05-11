@@ -520,7 +520,7 @@ if ($idItem <= 0) {
                             <div style="display:block">
                                 <label for="rating<?=$i?>"> ' . $i . ' étoiles </label>
                                 <progress id="rating<?=$i?>" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
-                                > </progress> <span>' . (int) $pourcentage . '%</span>
+                                > </progress> <span>' . round($pourcentage)  . '%</span>
                             </div>
                         
                         
