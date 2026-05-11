@@ -10,7 +10,7 @@ if (!function_exists('h')) {
         return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     }
 }
-
+$droit_de_commenter = false;
 $idItem = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 $item = null;
@@ -21,6 +21,91 @@ $messageAction = "";
 $idJoueurConnecte = isset($_SESSION['user']['idJoueur']) ? (int) $_SESSION['user']['idJoueur'] : 0;
 $estAdmin = isset($_SESSION['user']['estAdmin']) && (int) $_SESSION['user']['estAdmin'] === 1;
 
+if ($idJoueurConnecte > 0) {
+
+    $sqlPossede = "
+        SELECT *
+        FROM Inventaires
+        WHERE idJoueur = ?
+        AND idItem = ?
+    ";
+
+    $stmtPossede = $pdo->prepare($sqlPossede);
+    $stmtPossede->execute([$idJoueurConnecte, $idItem]);
+
+    $droit_de_commenter = $stmtPossede->fetchColumn() > 0;
+}
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    && isset($_POST['action'])
+    && $_POST['action'] === 'add_comment'
+) {
+
+    if (!$droit_de_commenter) {
+
+        $messageAction = "Vous devez posséder cet objet pour commenter.";
+
+    } else {
+
+        $nbEtoiles = isset($_POST['nbEtoiles'])
+            ? (int) $_POST['nbEtoiles']
+            : 0;
+
+        $commentaire = isset($_POST['eCommentaire'])
+            ? trim($_POST['eCommentaire'])
+            : "";
+
+        if ($nbEtoiles < 1 || $nbEtoiles > 5) {
+
+            $messageAction = "Veuillez sélectionner entre 1 et 5 étoiles.";
+
+        } else {
+
+            /* Vérifie si le joueur a déjà commenté */
+            $sqlExiste = "
+                SELECT COUNT(*)
+                FROM Evaluations
+                WHERE idJoueur = ?
+                AND idItem = ?
+            ";
+
+            $stmtExiste = $pdo->prepare($sqlExiste);
+            $stmtExiste->execute([$idJoueurConnecte, $idItem]);
+
+            $dejaCommente = $stmtExiste->fetchColumn() > 0;
+
+            if ($dejaCommente) {
+
+                $messageAction = "Vous avez déjà commenté cet objet.";
+
+            } else {
+
+                $sqlInsert = "
+                    INSERT INTO Evaluations
+                    (
+                        idJoueur,
+                        idItem,
+                        eCommentaire,
+                        nbEtoiles
+                    )
+                    VALUES (?, ?, ?, ?)
+                ";
+
+                $stmtInsert = $pdo->prepare($sqlInsert);
+
+                $stmtInsert->execute([
+                    $idJoueurConnecte,
+                    $idItem,
+                    $commentaire,
+                    $nbEtoiles
+                ]);
+
+                $messageAction = "Commentaire publié.";
+
+            }
+        }
+    }
+}
 /*
     AJOUT AU PANIER SANS CHANGER DE PAGE
 */
@@ -205,6 +290,40 @@ if ($idItem <= 0) {
     <meta charset="UTF-8">
     <title>Détails Item</title>
     <link rel="stylesheet" href="public/css/style.css">
+    <style>
+        .rating-select {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+
+        .star-label {
+            cursor: pointer;
+        }
+
+        .star-label input {
+            display: none;
+        }
+
+        .star {
+            font-size: 2rem;
+            color: gray;
+            transition: color 0.2s;
+        }
+
+        .star-label:hover .star,
+        .star-label:hover~.star-label .star {
+            color: gold;
+        }
+
+        .star-label input:checked~.star,
+        .star-label input:checked+.star,
+        .star-label:has(input:checked) .star,
+        .star-label:has(input:checked)~.star-label .star {
+            color: gold;
+        }
+    </style>
 </head>
 
 <body>
@@ -352,7 +471,7 @@ if ($idItem <= 0) {
                         <?php
                         for ($i = 1; $i <= 5; $i++) {
                             if ($i <= $moyenne) {
-                                echo '<span style="font-size:150%;color:yellow;">★</span>';
+                                echo '<span style="font-size:150%;color:gold;">★</span>';
                             } else {
                                 echo '<span style="font-size:150%;color:#00B0C7;">☆</span>';
                             }
@@ -417,8 +536,54 @@ if ($idItem <= 0) {
 
                 </div>
             </section>
+            <section class="evaluations-section">
+                <h3>Ajouter un commentaire</h3>
 
-            
+
+                <?php if ($droit_de_commenter): ?>
+
+                    <form method="post" action="details.php?id=<?php echo (int) $idItem; ?>" class="evaluation-card">
+
+                        <input type="hidden" name="action" value="add_comment">
+
+                        <div class="rating-select">
+
+                            <?php for ($i = 5; $i >= 1; $i--): ?>
+
+                                <label class="star-label">
+
+                                    <input type="radio" name="nbEtoiles" value="<?php echo $i; ?>" required>
+
+                                    <span class="star">★</span>
+
+                                </label>
+
+                            <?php endfor; ?>
+
+                        </div>
+
+                        <br>
+
+                        <textarea style="width: 100%; min-height: 70px;" name="eCommentaire" maxlength="400" placeholder="Votre commentaire..." required></textarea>
+
+                        <br><br>
+
+                        <button type="submit">
+                            Publier
+                        </button>
+
+                    </form>
+
+                <?php else: ?>
+
+                    <p>
+                        Vous devez posséder cet objet pour publier un commentaire.
+                    </p>
+
+                <?php endif; ?>
+
+            </section>
+
 
             <section class="evaluations-section">
 
