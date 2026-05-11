@@ -480,7 +480,7 @@ if ($idItem <= 0) {
 
                         ?>
 
-                        <?= $moyenne ?> / 5
+                        <?= round($moyenne, 1) ?> / 5
                     </div>
                     <div>
                         <?= $totalEval ?> <small>évaluations au niveau mondial
@@ -520,7 +520,7 @@ if ($idItem <= 0) {
                             <div style="display:block">
                                 <label for="rating<?=$i?>"> ' . $i . ' étoiles </label>
                                 <progress id="rating<?=$i?>" value="' . $total_Rating_this_star . '" max="' . $totalEval . '"
-                                > </progress> <span>' . $pourcentage . '%</span>
+                                > </progress> <span>' . (int) $pourcentage . '%</span>
                             </div>
                         
                         
