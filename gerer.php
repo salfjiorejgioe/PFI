@@ -3,7 +3,6 @@ require_once 'session_config.php';
 require_once 'db.php';
 require_once 'helpers.php';
 
-// accessible seulement aux admins
 if (
     !isset($_SESSION['user']) ||
     !isset($_SESSION['user']['estAdmin']) ||
@@ -17,8 +16,102 @@ $message = "";
 $error = "";
 $itemChoisi = null;
 $items = [];
+$joueurs = [];
 
-// charger tous les items pour le dropdown
+function h($texte)
+{
+    return htmlspecialchars($texte ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+/* =========================
+   INTERVENTION JOUEUR
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'intervention_joueur') {
+    $idJoueurIntervention = (int)($_POST['idJoueur'] ?? 0);
+
+    if ($idJoueurIntervention <= 0) {
+        $error = "Veuillez choisir un joueur.";
+    } else {
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("
+                SELECT idJoueur, alias, nbInterventionsAdmin
+                FROM Joueurs
+                WHERE idJoueur = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$idJoueurIntervention]);
+            $joueurChoisi = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$joueurChoisi) {
+                throw new Exception("Joueur introuvable.");
+            }
+
+            $nbInterventions = (int)($joueurChoisi['nbInterventionsAdmin'] ?? 0);
+
+            if ($nbInterventions >= 3) {
+                throw new Exception("Ce joueur a déjà reçu 3 interventions.");
+            }
+
+            if ($nbInterventions === 0) {
+                $stmt = $pdo->prepare("
+                    UPDATE Joueurs
+                    SET gold = gold + 100,
+                        nbInterventionsAdmin = nbInterventionsAdmin + 1
+                    WHERE idJoueur = ?
+                ");
+                $bonus = "100 gold";
+            } elseif ($nbInterventions === 1) {
+                $stmt = $pdo->prepare("
+                    UPDATE Joueurs
+                    SET argent = argent + 100,
+                        nbInterventionsAdmin = nbInterventionsAdmin + 1
+                    WHERE idJoueur = ?
+                ");
+                $bonus = "100 argent";
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE Joueurs
+                    SET bronze = bronze + 100,
+                        nbInterventionsAdmin = nbInterventionsAdmin + 1
+                    WHERE idJoueur = ?
+                ");
+                $bonus = "100 bronze";
+            }
+
+            $stmt->execute([$idJoueurIntervention]);
+            $pdo->commit();
+
+            $message = "Intervention réussie pour " . $joueurChoisi['alias'] . " : +" . $bonus . ".";
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            $error = $e->getMessage();
+        }
+    }
+}
+
+/* =========================
+   CHARGER JOUEURS
+========================= */
+try {
+    $stmtJoueurs = $pdo->query("
+        SELECT idJoueur, alias, gold, argent, bronze, nbInterventionsAdmin
+        FROM Joueurs
+        ORDER BY alias
+    ");
+    $joueurs = $stmtJoueurs->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $joueurs = [];
+    $error = "Erreur lors du chargement des joueurs.";
+}
+
+/* =========================
+   CHARGER ITEMS
+========================= */
 try {
     $stmt = $pdo->query("SELECT idItem, nom FROM Items ORDER BY nom");
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -28,7 +121,9 @@ try {
 
 $idItem = isset($_GET['idItem']) ? (int) $_GET['idItem'] : 0;
 
-// charger l'item choisi
+/* =========================
+   CHARGER ITEM CHOISI
+========================= */
 if ($idItem > 0) {
     try {
         $sql = "
@@ -54,7 +149,6 @@ if ($idItem > 0) {
                 s.estInstantane,
                 s.rarete,
                 s.typeSort
-
             FROM Items i
             LEFT JOIN Armes a ON i.idItem = a.idItem
             LEFT JOIN Armures ar ON i.idItem = ar.idItem
@@ -76,7 +170,9 @@ if ($idItem > 0) {
     }
 }
 
-// mise à jour
+/* =========================
+   MODIFIER ITEM
+========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
     $idItemPost = (int) ($_POST['idItem'] ?? 0);
 
@@ -97,7 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
         try {
             $pdo->beginTransaction();
 
-            // table Items
             $stmt = $pdo->prepare("
                 UPDATE Items
                 SET nom = ?, quantiteStock = ?, prix = ?, photo = ?, estDisponible = ?
@@ -107,12 +202,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
                 $nom,
                 $quantiteStock,
                 $prix,
-                $photo,
+                $photo === '' ? null : $photo,
                 $estDisponible,
                 $idItemPost
             ]);
 
-            // arme
             if ($typeItem === 'A') {
                 $description = trim($_POST['description'] ?? '');
                 $efficacite = trim($_POST['efficacite'] ?? '');
@@ -126,7 +220,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
                 $stmt->execute([$description, $efficacite, $genre, $idItemPost]);
             }
 
-            // potion
             if ($typeItem === 'P') {
                 $effet = trim($_POST['effet'] ?? '');
                 $duree = (int) ($_POST['duree'] ?? 0);
@@ -139,7 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
                 $stmt->execute([$effet, $duree, $idItemPost]);
             }
 
-            // armure
             if ($typeItem === 'R') {
                 $matiere = trim($_POST['matiere'] ?? '');
                 $taille = trim($_POST['taille'] ?? '');
@@ -152,7 +244,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
                 $stmt->execute([$matiere, $taille, $idItemPost]);
             }
 
-            // sort
             if ($typeItem === 'S') {
                 $rarete = (int) ($_POST['rarete'] ?? 0);
                 $typeSort = trim($_POST['typeSort'] ?? '');
@@ -166,8 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
                 $stmt->execute([$rarete, $typeSort, $estInstantane, $idItemPost]);
             }
 
-            // si stock = 0 on peut rendre indisponible auto
-            if ($quantiteStock == 0) {
+            if ($quantiteStock === 0) {
                 $stmt = $pdo->prepare("
                     UPDATE Items
                     SET estDisponible = 0
@@ -177,9 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
             }
 
             $pdo->commit();
-            $message = "Item modifié avec succès.";
 
-            // recharger l'item après update
             header("Location: gerer.php?idItem=" . $idItemPost . "&ok=1");
             exit;
 
@@ -187,7 +275,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifier_item'])) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            $error = "Erreur lors de la modification : " . $e->getMessage();
+
+            $error = "Erreur lors de la modification.";
         }
     }
 }
@@ -207,113 +296,145 @@ if (isset($_GET['ok'])) {
 
 <body>
 
-    <?php include_once "template/header.php"; ?>
+<?php include_once "template/header.php"; ?>
 
-    <main class="admin-container">
+<main class="admin-container">
+    <div class="admin-card">
+        <h1>Gérer un item</h1>
+
+        <?php if ($message !== ""): ?>
+            <p class="msg-success"><?php echo h($message); ?></p>
+        <?php endif; ?>
+
+        <?php if ($error !== ""): ?>
+            <p class="msg-error"><?php echo h($error); ?></p>
+        <?php endif; ?>
+
+        <form method="get" class="admin-form">
+            <label for="idItem">Choisir un item</label>
+            <select name="idItem" id="idItem" onchange="this.form.submit()">
+                <option value="">-- Sélectionner un item --</option>
+                <?php foreach ($items as $item): ?>
+                    <option value="<?php echo (int) $item['idItem']; ?>" <?php echo ($idItem === (int) $item['idItem']) ? 'selected' : ''; ?>>
+                        <?php echo h($item['nom']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </form>
+    </div>
+
+    <div class="admin-card">
+        <h2>Intervention joueur</h2>
+        <p>1ère intervention : +100 gold. 2ème : +100 argent. 3ème : +100 bronze.</p>
+
+        <form method="post" class="admin-form">
+            <input type="hidden" name="action" value="intervention_joueur">
+
+            <label for="idJoueur">Choisir un joueur</label>
+            <select name="idJoueur" id="idJoueur" required>
+                <option value="">-- Sélectionner un joueur --</option>
+
+                <?php foreach ($joueurs as $joueur): ?>
+                    <?php
+                    $nb = (int)($joueur['nbInterventionsAdmin'] ?? 0);
+                    $disabled = $nb >= 3 ? 'disabled' : '';
+                    ?>
+                    <option value="<?php echo (int) $joueur['idJoueur']; ?>" <?php echo $disabled; ?>>
+                        <?php echo h($joueur['alias']); ?>
+                        — <?php echo $nb; ?>/3
+                        — <?php echo (int) $joueur['gold']; ?> or,
+                        <?php echo (int) $joueur['argent']; ?> argent,
+                        <?php echo (int) $joueur['bronze']; ?> bronze
+                        <?php echo $nb >= 3 ? ' — MAX' : ''; ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <button type="submit">Faire une intervention</button>
+        </form>
+    </div>
+
+    <?php if ($itemChoisi): ?>
         <div class="admin-card">
-            <h1>Gérer un item</h1>
+            <h2>Modifier : <?php echo h($itemChoisi['nom']); ?></h2>
 
-            <?php if ($message != ""): ?>
-                <p class="msg-success"><?php echo h($message); ?></p>
-            <?php endif; ?>
+            <form method="post" class="admin-form">
+                <input type="hidden" name="modifier_item" value="1">
+                <input type="hidden" name="idItem" value="<?php echo (int) $itemChoisi['idItem']; ?>">
+                <input type="hidden" name="typeItem" value="<?php echo h($itemChoisi['typeItem']); ?>">
 
-            <?php if ($error != ""): ?>
-                <p class="msg-error"><?php echo h($error); ?></p>
-            <?php endif; ?>
+                <label>Nom</label>
+                <input type="text" name="nom" value="<?php echo h($itemChoisi['nom']); ?>" required>
 
-            <!-- dropdown -->
-            <form method="get" class="admin-form">
-                <label for="idItem">Choisir un item</label>
-                <select name="idItem" id="idItem" onchange="this.form.submit()">
-                    <option value="">-- Sélectionner un item --</option>
-                    <?php foreach ($items as $item): ?>
-                        <option value="<?php echo (int) $item['idItem']; ?>" <?php echo ($idItem === (int) $item['idItem']) ? 'selected' : ''; ?>>
-                            <?php echo h($item['nom']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        </div>
+                <label>Prix</label>
+                <input type="number" name="prix" value="<?php echo (int) $itemChoisi['prix']; ?>" min="0" required>
 
-        <?php if ($itemChoisi): ?>
-            <div class="admin-card">
-                <h2>Modifier : <?php echo h($itemChoisi['nom']); ?></h2>
+                <label>Stock</label>
+                <input type="number" name="quantiteStock" value="<?php echo (int) $itemChoisi['quantiteStock']; ?>" min="0" required>
 
-                <form method="post" class="admin-form">
-                    <input type="hidden" name="modifier_item" value="1">
-                    <input type="hidden" name="idItem" value="<?php echo (int) $itemChoisi['idItem']; ?>">
-                    <input type="hidden" name="typeItem" value="<?php echo h($itemChoisi['typeItem']); ?>">
+                <label>Image</label>
+                <input type="text" name="photo" value="<?php echo h($itemChoisi['photo']); ?>">
 
-                    <label>Nom</label>
-                    <input type="text" name="nom" value="<?php echo h($itemChoisi['nom']); ?>" required>
+                <label class="admin-check">
+                    <input type="checkbox" name="estDisponible" <?php echo ((int) $itemChoisi['estDisponible'] === 1) ? 'checked' : ''; ?>>
+                    Disponible
+                </label>
 
-                    <label>Prix</label>
-                    <input type="number" name="prix" value="<?php echo (int) $itemChoisi['prix']; ?>" min="0" required>
+                <?php if ($itemChoisi['typeItem'] === 'A'): ?>
+                    <h3>Infos Arme</h3>
 
-                    <label>Stock</label>
-                    <input type="number" name="quantiteStock" value="<?php echo (int) $itemChoisi['quantiteStock']; ?>"
-                        min="0" required>
+                    <label>Description</label>
+                    <input type="text" name="description" value="<?php echo h($itemChoisi['description']); ?>">
 
-                    <label>Image</label>
-                    <input type="text" name="photo" value="<?php echo h($itemChoisi['photo']); ?>">
+                    <label>Efficacité</label>
+                    <input type="text" name="efficacite" value="<?php echo h($itemChoisi['efficacite']); ?>">
+
+                    <label>Genre</label>
+                    <input type="text" name="genre" value="<?php echo h($itemChoisi['genre']); ?>">
+                <?php endif; ?>
+
+                <?php if ($itemChoisi['typeItem'] === 'P'): ?>
+                    <h3>Infos Potion</h3>
+
+                    <label>Effet</label>
+                    <input type="text" name="effet" value="<?php echo h($itemChoisi['effet']); ?>">
+
+                    <label>Durée</label>
+                    <input type="number" name="duree" value="<?php echo (int) $itemChoisi['duree']; ?>" min="0">
+                <?php endif; ?>
+
+                <?php if ($itemChoisi['typeItem'] === 'R'): ?>
+                    <h3>Infos Armure</h3>
+
+                    <label>Matière</label>
+                    <input type="text" name="matiere" value="<?php echo h($itemChoisi['matiere']); ?>">
+
+                    <label>Taille</label>
+                    <input type="text" name="taille" value="<?php echo h($itemChoisi['taille']); ?>">
+                <?php endif; ?>
+
+                <?php if ($itemChoisi['typeItem'] === 'S'): ?>
+                    <h3>Infos Sort</h3>
+
+                    <label>Rareté</label>
+                    <input type="number" name="rarete" value="<?php echo (int) $itemChoisi['rarete']; ?>" min="0">
+
+                    <label>Type sort</label>
+                    <input type="text" name="typeSort" value="<?php echo h($itemChoisi['typeSort']); ?>">
 
                     <label class="admin-check">
-                        <input type="checkbox" name="estDisponible" <?php echo ((int) $itemChoisi['estDisponible'] === 1) ? 'checked' : ''; ?>>
-                        Disponible
+                        <input type="checkbox" name="estInstantane" <?php echo ((int) $itemChoisi['estInstantane'] === 1) ? 'checked' : ''; ?>>
+                        Instantané
                     </label>
+                <?php endif; ?>
 
-                    <?php if ($itemChoisi['typeItem'] === 'A'): ?>
-                        <h3>Infos Arme</h3>
-                        <label>Description</label>
-                        <input type="text" name="description" value="<?php echo h($itemChoisi['description']); ?>">
+                <button type="submit">Enregistrer les modifications</button>
+            </form>
+        </div>
+    <?php endif; ?>
+</main>
 
-                        <label>Efficacité</label>
-                        <input type="text" name="efficacite" value="<?php echo h($itemChoisi['efficacite']); ?>">
-
-                        <label>Genre</label>
-                        <input type="text" name="genre" value="<?php echo h($itemChoisi['genre']); ?>">
-                    <?php endif; ?>
-
-                    <?php if ($itemChoisi['typeItem'] === 'P'): ?>
-                        <h3>Infos Potion</h3>
-                        <label>Effet</label>
-                        <input type="text" name="effet" value="<?php echo h($itemChoisi['effet']); ?>">
-
-                        <label>Durée</label>
-                        <input type="number" name="duree" value="<?php echo (int) $itemChoisi['duree']; ?>" min="0">
-                    <?php endif; ?>
-
-                    <?php if ($itemChoisi['typeItem'] === 'R'): ?>
-                        <h3>Infos Armure</h3>
-                        <label>Matière</label>
-                        <input type="text" name="matiere" value="<?php echo h($itemChoisi['matiere']); ?>">
-
-                        <label>Taille</label>
-                        <input type="text" name="taille" value="<?php echo h($itemChoisi['taille']); ?>">
-                    <?php endif; ?>
-
-                    <?php if ($itemChoisi['typeItem'] === 'S'): ?>
-                        <h3>Infos Sort</h3>
-                        <label>Rareté</label>
-                        <input type="number" name="rarete" value="<?php echo (int) $itemChoisi['rarete']; ?>" min="0">
-
-                        <label>Type sort</label>
-                        <input type="text" name="typeSort" value="<?php echo h($itemChoisi['typeSort']); ?>">
-
-                        <label class="admin-check">
-                            <input type="checkbox" name="estInstantane" <?php echo ((int) $itemChoisi['estInstantane'] === 1) ? 'checked' : ''; ?>>
-                            Instantané
-                        </label>
-                    <?php endif; ?>
-
-                    <button type="submit">Enregistrer les modifications</button>
-                </form>
-            </div>
-        <?php endif; ?>
-    </main>
-
-    <?php include_once "template/footer.php"; ?>
+<?php include_once "template/footer.php"; ?>
 
 </body>
-
 </html>
